@@ -1,0 +1,16 @@
+{
+  //"extends": "./node_modules/@salesforce/dev-config/tsconfig",
+  "compileOnSave": true,
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "./lib",
+    "importHelpers": true
+  },
+  "include": [
+    "./src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "lib"
+  ]
+}
