@@ -5,6 +5,19 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug Plugin",
+      "program": "${workspaceFolder}/bin/run",
+      //"args": ["siri:data:bulkv2:status", "-i", "7505r0000014fGmAAI"],
+      "args": ["siri:data:bulkv2:upsert", "-s", "Account","-i","external_Id__c","-f","bulk-insert-accounts.csv"],
+      "request": "launch",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "pwa-node",
+      "cwd": "/Users/venkatkoppolu/Documents/lwc-cx/lwc-practice/",
+      "stopOnEntry": true
+    },
+    {
       "type": "node",
       "request": "attach",
       "name": "Attach to Remote",

@@ -1,10 +1,12 @@
 {
-  //"extends": "./node_modules/@salesforce/dev-config/tsconfig",
+  "extends": "./node_modules/@salesforce/dev-config/tsconfig",
   "compileOnSave": true,
   "compilerOptions": {
     "declaration": true,
     "outDir": "./lib",
-    "importHelpers": true
+    "importHelpers": true,
+    "rootDir": "./src",
+    "lib": ["DOM"]
   },
   "include": [
     "./src/**/*"

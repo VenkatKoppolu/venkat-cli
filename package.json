@@ -10,6 +10,8 @@
     "@oclif/errors": "^1",
     "@salesforce/command": "^2",
     "@salesforce/core": "^2",
+    "axios": "^0.21.1",
+    "puppeteer": "^10.2.0",
     "tslib": "^1"
   },
   "devDependencies": {
@@ -20,12 +22,15 @@
     "@types/chai": "^4",
     "@types/mocha": "^5",
     "@types/node": "^10",
+    "@types/puppeteer": "^5.4.4",
     "chai": "^4",
     "globby": "^8",
     "mocha": "^5",
+    "nodemon": "^2.0.12",
     "nyc": "^14",
     "ts-node": "^8",
-    "tslint": "^5"
+    "tslint": "^5",
+    "typescript": "4.2.4"
   },
   "engines": {
     "node": ">=8.0.0"
