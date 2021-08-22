@@ -25,8 +25,8 @@ export default class BulkV2Status extends SfdxCommand {
     this.ux.startSpinner('Getting Status');
     try {
       let bulkv2 = new BulkV2(this.org.getConnection(), this.ux);
-      let jobsummary: JobInfo = await bulkv2.getJob(this.flags.jobid);
-      bulkv2.bulkStatus(jobsummary);
+      let jobsummary: JobInfo = await bulkv2.status(this.flags.jobid);
+      bulkv2.statusSummary(jobsummary);
       this.ux.stopSpinner();
       return jobsummary;
     } catch (err) {

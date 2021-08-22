@@ -27,10 +27,12 @@ export interface JobInfo {
     errorMessage?: string;
 }
 
-export interface JobRequest {
+export interface BulkV2Input {
     sobjecttype: string;
     externalid?: string;
     csvfile?: string
     operation: string;
     lineending?: string;
+    delimiter?: string;
+    query?: string;
 }

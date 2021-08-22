@@ -35,7 +35,7 @@ export default class BulkV2Results extends SfdxCommand {
     this.ux.startSpinner('Fetching results');
     try {
       let bulkv2 = new BulkV2(this.org.getConnection(), this.ux);
-      let result: boolean = await bulkv2.getSuccessfullResults(this.flags.jobid,this.flags.type.toUpperCase(),this.flags.outputfile);
+      let result: boolean = await bulkv2.results(this.flags.jobid,this.flags.type.toUpperCase(),this.flags.outputfile);
       if(result){
         this.ux.log(`results are written to file ${this.flags.outputfile}`);
       }

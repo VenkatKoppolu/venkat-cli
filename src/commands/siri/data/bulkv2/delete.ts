@@ -5,8 +5,6 @@ import * as os from 'os';
 import { BulkV2Input, JobInfo } from '../../../../types/bulkv2';
 import { BulkV2 } from '../../../../utilities/bulkv2';
 
-
-
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
@@ -14,18 +12,13 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('siri', 'bulkv2');
 
-export default class BulkV2Upsert extends SfdxCommand {
-    public static readonly description = messages.getMessage('upsertDescription');
-    public static readonly examples = messages.getMessage('upsertExamples').split(os.EOL);
+export default class BulkV2Delete extends SfdxCommand {
+    public static readonly description = messages.getMessage('deleteDescription');
+    public static readonly examples = messages.getMessage('deleteExamples').split(os.EOL);
     protected static flagsConfig: FlagsConfig = {
         sobjecttype: flags.string({
             char: "s",
             description: messages.getMessage("sobjecttypeDescription"),
-            required: true
-        }),
-        externalid: flags.string({
-            char: "i",
-            description: messages.getMessage("externalIdDescription"),
             required: true
         }),
         csvfile: flags.string({
@@ -44,15 +37,21 @@ export default class BulkV2Upsert extends SfdxCommand {
             description: messages.getMessage("columndelimiterDescription"),
             required: false,
             default: "COMMA"
+        }),
+        hardelete: flags.boolean({
+            char: "h",
+            description: messages.getMessage("harddeleteDescription"),
+            required: false,
+            default: false
         })
     };
     protected static requiresUsername = true;
 
     public async run(): Promise<JobInfo> {
-        this.ux.startSpinner('BulkV2 Upsert');
+        this.ux.startSpinner('BulkV2 Delete');
         try {
             let bulkv2 = new BulkV2(this.org.getConnection(), this.ux);
-            let input: BulkV2Input = { sobjecttype: this.flags.sobjecttype, externalid: this.flags.externalid, operation: 'upsert', csvfile: this.flags.csvfile, lineending: this.flags.lineending, delimiter: this.flags.columndelimiter };
+            let input: BulkV2Input = { sobjecttype: this.flags.sobjecttype, operation: (this.flags.hardelete)?'hardDelete':'delete', csvfile: this.flags.csvfile, lineending: this.flags.lineending, delimiter: this.flags.columndelimiter };
             let response: JobInfo = await bulkv2.operate(input);
             this.ux.log(messages.getMessage('jobDetails', [response.id, response.id]));
             this.ux.stopSpinner();

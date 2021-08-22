@@ -5,8 +5,6 @@ import * as os from 'os';
 import { BulkV2Input, JobInfo } from '../../../../types/bulkv2';
 import { BulkV2 } from '../../../../utilities/bulkv2';
 
-
-
 // Initialize Messages with the current plugin directory
 Messages.importMessagesDirectory(__dirname);
 
@@ -14,23 +12,18 @@ Messages.importMessagesDirectory(__dirname);
 // or any library that is using the messages framework can also be loaded this way.
 const messages = Messages.loadMessages('siri', 'bulkv2');
 
-export default class BulkV2Upsert extends SfdxCommand {
-    public static readonly description = messages.getMessage('upsertDescription');
-    public static readonly examples = messages.getMessage('upsertExamples').split(os.EOL);
+export default class BulkV2Query extends SfdxCommand {
+    public static readonly description = messages.getMessage('queryDescription');
+    public static readonly examples = messages.getMessage('queryExamples').split(os.EOL);
     protected static flagsConfig: FlagsConfig = {
         sobjecttype: flags.string({
             char: "s",
             description: messages.getMessage("sobjecttypeDescription"),
             required: true
         }),
-        externalid: flags.string({
-            char: "i",
-            description: messages.getMessage("externalIdDescription"),
-            required: true
-        }),
-        csvfile: flags.string({
-            char: "f",
-            description: messages.getMessage("csvfileDescription"),
+        query: flags.string({
+            char: "q",
+            description: messages.getMessage("queryDescription"),
             required: true
         }),
         lineending: flags.string({
@@ -44,15 +37,20 @@ export default class BulkV2Upsert extends SfdxCommand {
             description: messages.getMessage("columndelimiterDescription"),
             required: false,
             default: "COMMA"
+        }),
+        outputfile: flags.string({
+          char: "o",
+          description: messages.getMessage("outputFileDescription"),
+          required: true
         })
     };
     protected static requiresUsername = true;
 
     public async run(): Promise<JobInfo> {
-        this.ux.startSpinner('BulkV2 Upsert');
+        this.ux.startSpinner('BulkV2 Query');
         try {
             let bulkv2 = new BulkV2(this.org.getConnection(), this.ux);
-            let input: BulkV2Input = { sobjecttype: this.flags.sobjecttype, externalid: this.flags.externalid, operation: 'upsert', csvfile: this.flags.csvfile, lineending: this.flags.lineending, delimiter: this.flags.columndelimiter };
+            let input: BulkV2Input = { sobjecttype: this.flags.sobjecttype, operation: 'query', query: this.flags.query, lineending: this.flags.lineending, delimiter: this.flags.columndelimiter };
             let response: JobInfo = await bulkv2.operate(input);
             this.ux.log(messages.getMessage('jobDetails', [response.id, response.id]));
             this.ux.stopSpinner();

@@ -30,10 +30,175 @@ USAGE
 ```
 <!-- usagestop -->
 <!-- commands -->
+* [`sfdx siri:data:bulkv2:delete -s <string> -f <string> [-l <string>] [-d <string>] [-h] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2delete--s-string--f-string--l-string--d-string--h--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx siri:data:bulkv2:insert -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2insert--s-string--f-string--l-string--d-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx siri:data:bulkv2:query -s <string> -q <string> -o <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2query--s-string--q-string--o-string--l-string--d-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx siri:data:bulkv2:results -i <string> -t <string> -o <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2results--i-string--t-string--o-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx siri:data:bulkv2:status -i <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2status--i-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx siri:data:bulkv2:upsert -s <string> -i <string> -f <string> [-l <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2upsert--s-string--i-string--f-string--l-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx siri:data:bulkv2:update -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2update--s-string--f-string--l-string--d-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx siri:data:bulkv2:upsert -s <string> -i <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2upsert--s-string--i-string--f-string--l-string--d-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx siri:org [-n <string>] [-f] [-v <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siriorg--n-string--f--v-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+
+## `sfdx siri:data:bulkv2:delete -s <string> -f <string> [-l <string>] [-d <string>] [-h] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+
+Delete or hard delete the records using BulkV2 API.
+
+```
+Delete or hard delete the records using BulkV2 API.
+
+USAGE
+  $ sfdx siri:data:bulkv2:delete -s <string> -f <string> [-l <string>] [-d <string>] [-h] [-u <string>] [--apiversion 
+  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -d, --columndelimiter=columndelimiter
+      [default: COMMA] The column delimiter used for CSV job data. The default value is COMMA. Valid values are:
+      BACKQUOTE—backquote character (`)
+      CARET—caret character (^)
+      COMMA—comma character (,) which is the default delimiter
+      PIPE—pipe character (|)
+      SEMICOLON—semicolon character (;)
+      TAB—tab character
+
+  -f, --csvfile=csvfile
+      (required) (required) the path to the CSV file that defines the records to upsert
+
+  -h, --hardelete
+      (optional) if specified then the deleted records aren't stored in the Recycle Bin. 
+        permission “Bulk API Hard Delete” should be set for the user to perform hardDelete.
+
+  -l, --lineending=lineending
+      [default: LF] (optional) The line ending used for CSV job data, marking the end of a data row. The default is LF. 
+      Valid values are:
+      LF—linefeed character
+      CRLF—carriage return character followed by a linefeed character
+
+  -s, --sobjecttype=sobjecttype
+      (required) (required) the sObject type of the records you want to upsert
+
+  -u, --targetusername=targetusername
+      username or alias for the target org; overrides default target org
+
+  --apiversion=apiversion
+      override the api version used for api requests made by this command
+
+  --json
+      format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
+      [default: warn] logging level for this command invocation
+
+EXAMPLES
+  sfdx siri:data:bulkv2:delete -u me@my.org -s Account -f /csv/file/path/csvfile.csv
+  sfdx siri:data:bulkv2:delete -u me@my.org -s Account --hardelete -f /csv/file/path/csvfile.csv
+```
+
+_See code: [src/commands/siri/data/bulkv2/delete.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/delete.ts)_
+
+## `sfdx siri:data:bulkv2:insert -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+
+Inserts records into the org using BulkV2 API.
+
+```
+Inserts records into the org using BulkV2 API.
+
+USAGE
+  $ sfdx siri:data:bulkv2:insert -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion 
+  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -d, --columndelimiter=columndelimiter
+      [default: COMMA] The column delimiter used for CSV job data. The default value is COMMA. Valid values are:
+      BACKQUOTE—backquote character (`)
+      CARET—caret character (^)
+      COMMA—comma character (,) which is the default delimiter
+      PIPE—pipe character (|)
+      SEMICOLON—semicolon character (;)
+      TAB—tab character
+
+  -f, --csvfile=csvfile
+      (required) (required) the path to the CSV file that defines the records to upsert
+
+  -l, --lineending=lineending
+      [default: LF] (optional) The line ending used for CSV job data, marking the end of a data row. The default is LF. 
+      Valid values are:
+      LF—linefeed character
+      CRLF—carriage return character followed by a linefeed character
+
+  -s, --sobjecttype=sobjecttype
+      (required) (required) the sObject type of the records you want to upsert
+
+  -u, --targetusername=targetusername
+      username or alias for the target org; overrides default target org
+
+  --apiversion=apiversion
+      override the api version used for api requests made by this command
+
+  --json
+      format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
+      [default: warn] logging level for this command invocation
+
+EXAMPLE
+  sfdx siri:data:bulkv2:insert -u me@my.org -s Account -f /csv/file/path/csvfile.csv
+```
+
+_See code: [src/commands/siri/data/bulkv2/insert.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/insert.ts)_
+
+## `sfdx siri:data:bulkv2:query -s <string> -q <string> -o <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+
+Executes the query against the data in your default scratch org using BulkV2 API.
+
+```
+Executes the query against the data in your default scratch org using BulkV2 API.
+
+USAGE
+  $ sfdx siri:data:bulkv2:query -s <string> -q <string> -o <string> [-l <string>] [-d <string>] [-u <string>] 
+  [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -d, --columndelimiter=columndelimiter
+      [default: COMMA] The column delimiter used for CSV job data. The default value is COMMA. Valid values are:
+      BACKQUOTE—backquote character (`)
+      CARET—caret character (^)
+      COMMA—comma character (,) which is the default delimiter
+      PIPE—pipe character (|)
+      SEMICOLON—semicolon character (;)
+      TAB—tab character
+
+  -l, --lineending=lineending
+      [default: LF] (optional) The line ending used for CSV job data, marking the end of a data row. The default is LF. 
+      Valid values are:
+      LF—linefeed character
+      CRLF—carriage return character followed by a linefeed character
+
+  -o, --outputfile=outputfile
+      (required) (required) path to the csv file to which the results will be written.
+
+  -q, --query=query
+      (required) Executes the query against the data in your default scratch org using BulkV2 API.
+
+  -s, --sobjecttype=sobjecttype
+      (required) (required) the sObject type of the records you want to upsert
+
+  -u, --targetusername=targetusername
+      username or alias for the target org; overrides default target org
+
+  --apiversion=apiversion
+      override the api version used for api requests made by this command
+
+  --json
+      format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
+      [default: warn] logging level for this command invocation
+
+EXAMPLE
+  sfdx siri:data:bulkv2:query -u me@my.org -s Account -q "SELECT Id FROM ACCOUNT" -o /csv/file/path/csvfile.csv
+```
+
+_See code: [src/commands/siri/data/bulkv2/query.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/query.ts)_
 
 ## `sfdx siri:data:bulkv2:results -i <string> -t <string> -o <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -108,7 +273,58 @@ EXAMPLE
 
 _See code: [src/commands/siri/data/bulkv2/status.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/status.ts)_
 
-## `sfdx siri:data:bulkv2:upsert -s <string> -i <string> -f <string> [-l <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sfdx siri:data:bulkv2:update -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+
+Updates records into the org using BulkV2 API.
+
+```
+Updates records into the org using BulkV2 API.
+
+USAGE
+  $ sfdx siri:data:bulkv2:update -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion 
+  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -d, --columndelimiter=columndelimiter
+      [default: COMMA] The column delimiter used for CSV job data. The default value is COMMA. Valid values are:
+      BACKQUOTE—backquote character (`)
+      CARET—caret character (^)
+      COMMA—comma character (,) which is the default delimiter
+      PIPE—pipe character (|)
+      SEMICOLON—semicolon character (;)
+      TAB—tab character
+
+  -f, --csvfile=csvfile
+      (required) (required) the path to the CSV file that defines the records to upsert
+
+  -l, --lineending=lineending
+      [default: LF] (optional) The line ending used for CSV job data, marking the end of a data row. The default is LF. 
+      Valid values are:
+      LF—linefeed character
+      CRLF—carriage return character followed by a linefeed character
+
+  -s, --sobjecttype=sobjecttype
+      (required) (required) the sObject type of the records you want to upsert
+
+  -u, --targetusername=targetusername
+      username or alias for the target org; overrides default target org
+
+  --apiversion=apiversion
+      override the api version used for api requests made by this command
+
+  --json
+      format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
+      [default: warn] logging level for this command invocation
+
+EXAMPLE
+  sfdx siri:data:bulkv2:update -u me@my.org -s Account -f /csv/file/path/csvfile.csv
+```
+
+_See code: [src/commands/siri/data/bulkv2/update.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/update.ts)_
+
+## `sfdx siri:data:bulkv2:upsert -s <string> -i <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 upsert records from csv file to salesforce using BulkV2 API.
 
@@ -116,36 +332,45 @@ upsert records from csv file to salesforce using BulkV2 API.
 upsert records from csv file to salesforce using BulkV2 API.
 
 USAGE
-  $ sfdx siri:data:bulkv2:upsert -s <string> -i <string> -f <string> [-l <string>] [-u <string>] [--apiversion <string>] 
-  [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sfdx siri:data:bulkv2:upsert -s <string> -i <string> -f <string> [-l <string>] [-d <string>] [-u <string>] 
+  [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  -f, --csvfile=csvfile                                                             (required) (required) the path to
-                                                                                    the CSV file that defines the
-                                                                                    records to upsert
+  -d, --columndelimiter=columndelimiter
+      [default: COMMA] The column delimiter used for CSV job data. The default value is COMMA. Valid values are:
+      BACKQUOTE—backquote character (`)
+      CARET—caret character (^)
+      COMMA—comma character (,) which is the default delimiter
+      PIPE—pipe character (|)
+      SEMICOLON—semicolon character (;)
+      TAB—tab character
 
-  -i, --externalid=externalid                                                       (required) (required) the column
-                                                                                    name of the external ID
+  -f, --csvfile=csvfile
+      (required) (required) the path to the CSV file that defines the records to upsert
 
-  -l, --lineending=lineending                                                       [default: LF] (optional) The line
-                                                                                    ending used for CSV job data,
-                                                                                    marking the end of a data row. The
-                                                                                    default is LF
+  -i, --externalid=externalid
+      (required) (required) the column name of the external ID
 
-  -s, --sobjecttype=sobjecttype                                                     (required) (required) the sObject
-                                                                                    type of the records you want to
-                                                                                    upsert
+  -l, --lineending=lineending
+      [default: LF] (optional) The line ending used for CSV job data, marking the end of a data row. The default is LF. 
+      Valid values are:
+      LF—linefeed character
+      CRLF—carriage return character followed by a linefeed character
 
-  -u, --targetusername=targetusername                                               username or alias for the target
-                                                                                    org; overrides default target org
+  -s, --sobjecttype=sobjecttype
+      (required) (required) the sObject type of the records you want to upsert
 
-  --apiversion=apiversion                                                           override the api version used for
-                                                                                    api requests made by this command
+  -u, --targetusername=targetusername
+      username or alias for the target org; overrides default target org
 
-  --json                                                                            format output as json
+  --apiversion=apiversion
+      override the api version used for api requests made by this command
 
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
+  --json
+      format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
+      [default: warn] logging level for this command invocation
 
 EXAMPLE
   sfdx siri:data:bulkv2:upsert -u me@my.org -s Account -i externalId__c -f /csv/file/path/csvfile.csv
