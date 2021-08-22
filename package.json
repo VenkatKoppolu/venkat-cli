@@ -3,7 +3,7 @@
   "description": "cli plugins named after my daughter.",
   "version": "0.0.0",
   "author": "Venkat Koppolu",
-  "bugs": "https://github.com/https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/issues",
+  "bugs": "https://github.com/VenkatKoppolu/venkat-cli/issues",
   "dependencies": {
     "@oclif/command": "^1",
     "@oclif/config": "^1",
@@ -41,7 +41,7 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "homepage": "https://github.com/https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli",
+  "homepage": "https://github.com/VenkatKoppolu/venkat-cli",
   "keywords": [
     "sfdx-plugin"
   ],
@@ -58,7 +58,7 @@
       "@oclif/plugin-help"
     ]
   },
-  "repository": "https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli",
+  "repository": "https://github.com/VenkatKoppolu/venkat-cli",
   "scripts": {
     "lint": "tslint --project . --config tslint.json --format stylish",
     "postpack": "rm -f oclif.manifest.json",

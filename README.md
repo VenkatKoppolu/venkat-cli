@@ -4,13 +4,13 @@ siri
 cli plugins named after my daughter.
 
 [![Version](https://img.shields.io/npm/v/siri.svg)](https://npmjs.org/package/siri)
-[![CircleCI](https://circleci.com/gh/https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/tree/master.svg?style=shield)](https://circleci.com/gh/https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/tree/master)
-[![Appveyor CI](https://ci.appveyor.com/api/projects/status/github/https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli?branch=master&svg=true)](https://ci.appveyor.com/project/heroku/venkat-cli/branch/master)
-[![Codecov](https://codecov.io/gh/https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/branch/master/graph/badge.svg)](https://codecov.io/gh/https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli)
-[![Greenkeeper](https://badges.greenkeeper.io/https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli.svg)](https://greenkeeper.io/)
-[![Known Vulnerabilities](https://snyk.io/test/github/https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/badge.svg)](https://snyk.io/test/github/https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli)
+[![CircleCI](https://circleci.com/gh/https://github.com/VenkatKoppolu/venkat-cli/tree/master.svg?style=shield)](https://circleci.com/gh/https://github.com/VenkatKoppolu/venkat-cli/tree/master)
+[![Appveyor CI](https://ci.appveyor.com/api/projects/status/github/https://github.com/VenkatKoppolu/venkat-cli?branch=master&svg=true)](https://ci.appveyor.com/project/heroku/venkat-cli/branch/master)
+[![Codecov](https://codecov.io/gh/https://github.com/VenkatKoppolu/venkat-cli/branch/master/graph/badge.svg)](https://codecov.io/gh/https://github.com/VenkatKoppolu/venkat-cli)
+[![Greenkeeper](https://badges.greenkeeper.io/https://github.com/VenkatKoppolu/venkat-cli.svg)](https://greenkeeper.io/)
+[![Known Vulnerabilities](https://snyk.io/test/github/https://github.com/VenkatKoppolu/venkat-cli/badge.svg)](https://snyk.io/test/github/https://github.com/VenkatKoppolu/venkat-cli)
 [![Downloads/week](https://img.shields.io/npm/dw/siri.svg)](https://npmjs.org/package/siri)
-[![License](https://img.shields.io/npm/l/siri.svg)](https://github.com/https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/master/package.json)
+[![License](https://img.shields.io/npm/l/siri.svg)](https://github.com/https://github.com/VenkatKoppolu/venkat-cli/blob/master/package.json)
 
 <!-- toc -->
 * [Debugging your plugin](#debugging-your-plugin)
@@ -93,7 +93,7 @@ EXAMPLES
   sfdx siri:data:bulkv2:delete -u me@my.org -s Account --hardelete -f /csv/file/path/csvfile.csv
 ```
 
-_See code: [src/commands/siri/data/bulkv2/delete.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/delete.ts)_
+_See code: [src/commands/siri/data/bulkv2/delete.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/delete.ts)_
 
 ## `sfdx siri:data:bulkv2:insert -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -144,7 +144,7 @@ EXAMPLE
   sfdx siri:data:bulkv2:insert -u me@my.org -s Account -f /csv/file/path/csvfile.csv
 ```
 
-_See code: [src/commands/siri/data/bulkv2/insert.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/insert.ts)_
+_See code: [src/commands/siri/data/bulkv2/insert.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/insert.ts)_
 
 ## `sfdx siri:data:bulkv2:query -s <string> -q <string> -o <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -198,7 +198,7 @@ EXAMPLE
   sfdx siri:data:bulkv2:query -u me@my.org -s Account -q "SELECT Id FROM ACCOUNT" -o /csv/file/path/csvfile.csv
 ```
 
-_See code: [src/commands/siri/data/bulkv2/query.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/query.ts)_
+_See code: [src/commands/siri/data/bulkv2/query.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/query.ts)_
 
 ## `sfdx siri:data:bulkv2:results -i <string> -t <string> -o <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -239,7 +239,7 @@ EXAMPLE
   sfdx siri:data:bulkv2:results -u me@my.org -i 7505r0000xxxxxxxxx -t success -o /csv/output/file/path/csvfile.csv
 ```
 
-_See code: [src/commands/siri/data/bulkv2/results.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/results.ts)_
+_See code: [src/commands/siri/data/bulkv2/results.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/results.ts)_
 
 ## `sfdx siri:data:bulkv2:status -i <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -271,7 +271,7 @@ EXAMPLE
   sfdx siri:data:bulkv2:status -u me@my.org  -i 7505r0000xxxxxxxxx(jobid)
 ```
 
-_See code: [src/commands/siri/data/bulkv2/status.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/status.ts)_
+_See code: [src/commands/siri/data/bulkv2/status.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/status.ts)_
 
 ## `sfdx siri:data:bulkv2:update -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -322,7 +322,7 @@ EXAMPLE
   sfdx siri:data:bulkv2:update -u me@my.org -s Account -f /csv/file/path/csvfile.csv
 ```
 
-_See code: [src/commands/siri/data/bulkv2/update.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/update.ts)_
+_See code: [src/commands/siri/data/bulkv2/update.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/update.ts)_
 
 ## `sfdx siri:data:bulkv2:upsert -s <string> -i <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -376,7 +376,7 @@ EXAMPLE
   sfdx siri:data:bulkv2:upsert -u me@my.org -s Account -i externalId__c -f /csv/file/path/csvfile.csv
 ```
 
-_See code: [src/commands/siri/data/bulkv2/upsert.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/upsert.ts)_
+_See code: [src/commands/siri/data/bulkv2/upsert.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/upsert.ts)_
 
 ## `sfdx siri:org [-n <string>] [-f] [-v <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -416,7 +416,7 @@ EXAMPLES
      Hello myname! This is org: MyOrg and I will be around until Tue Mar 20 2018!
 ```
 
-_See code: [src/commands/siri/org.ts](https://github.com/VenkatKoppolu/venkat-cli.git/https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/org.ts)_
+_See code: [src/commands/siri/org.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/org.ts)_
 <!-- commandsstop -->
 <!-- debugging-your-plugin -->
 # Debugging your plugin
