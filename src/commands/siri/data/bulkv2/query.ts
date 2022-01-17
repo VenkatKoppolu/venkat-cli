@@ -50,7 +50,7 @@ export default class BulkV2Query extends SfdxCommand {
         this.ux.startSpinner('BulkV2 Query');
         try {
             let bulkv2 = new BulkV2(this.org.getConnection(), this.ux);
-            let input: BulkV2Input = { sobjecttype: this.flags.sobjecttype, operation: 'query', query: this.flags.query, lineending: this.flags.lineending, delimiter: this.flags.columndelimiter };
+            let input: BulkV2Input = { csvfile: this.flags.outputfile, sobjecttype: this.flags.sobjecttype, operation: 'query', query: this.flags.query, lineending: this.flags.lineending, delimiter: this.flags.columndelimiter };
             let response: JobInfo = await bulkv2.operate(input);
             this.ux.log(messages.getMessage('jobDetails', [response.id, response.id]));
             this.ux.stopSpinner();

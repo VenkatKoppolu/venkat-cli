@@ -99,7 +99,18 @@ export class BulkV2 {
     return job;
   }
 
+  public async moreResults(endpoint:string,locator:string,file: string): Promise<any> {
+    try{
+      let response=await axios.get(endpoint+'?locator='+locator,this.generateConfig('text/csv'));
+      fs.appendFileSync(resolve(Common.cwd,file),response.data);
+      return response;
+    }catch(err){
+      return err;
+    }
+  }
+
   public async results(jobid: string,type: string,file: string): Promise<boolean> {
+    this.query=type.includes('QUERY');
     let job:JobInfo=await this.status(jobid);
     if(job.state !== 'JobComplete'){
       this.ux.log(messages.getMessage('jobStatusInfo', [job.id, job.state]));
@@ -109,9 +120,21 @@ export class BulkV2 {
     let endpoint = this.generateEndpont(type, jobid);
     let config: AxiosRequestConfig = this.generateConfig('application/json');
     return axios.get(endpoint, config).then(response => {
-      return new Promise((resolved, rejected) => {
+      return new Promise(async (resolved, rejected) => {
         try{
           fs.writeFileSync(resolve(Common.cwd,file),response.data);
+          ///services/data/vXX.X/jobs/query/queryJobId/results?locator=locator
+          let locator = response.headers['sforce-locator'];
+          //let maxRecords = response.headers['sforce-numberofrecords'];
+          while(locator){
+            let res=await this.moreResults(endpoint,locator,file);
+            if('headers' in res && 'sforce-locator' in res.headers){
+            locator=res.headers['sforce-locator'];
+            //maxRecords=res.headers['sforce-numberofrecords'];
+            }else{
+              locator=null; 
+            }
+          }
           resolved(true);
         }catch(err){
           rejected(err);
