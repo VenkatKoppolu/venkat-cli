@@ -47,18 +47,24 @@ export default class BulkV2Delete extends SfdxCommand {
     };
     protected static requiresUsername = true;
 
-    public async run(): Promise<JobInfo> {
+    public async run(): Promise<JobInfo[]> {
         this.ux.startSpinner('BulkV2 Delete');
+        let responses : JobInfo[] = [];
         try {
             let bulkv2 = new BulkV2(this.org.getConnection(), this.ux);
-            let input: BulkV2Input = { sobjecttype: this.flags.sobjecttype, operation: (this.flags.hardelete)?'hardDelete':'delete', csvfile: this.flags.csvfile, lineending: this.flags.lineending, delimiter: this.flags.columndelimiter };
-            let response: JobInfo = await bulkv2.operate(input);
-            this.ux.log(messages.getMessage('jobDetails', [response.id, response.id]));
-            this.ux.stopSpinner();
-            return response;
+            let files = bulkv2.checkFileSizeAndAct(this.flags.csvfile);
+            for (let i = 0; i < files.length; i++) {
+                let input: BulkV2Input = { sobjecttype: this.flags.sobjecttype, operation: (this.flags.hardelete) ? 'hardDelete' : 'delete', csvfile: files[i], lineending: this.flags.lineending, delimiter: this.flags.columndelimiter };
+                let response: JobInfo = await bulkv2.operate(input);
+                responses.push(response);
+                this.ux.log(messages.getMessage('jobDetails', [response.id, response.id]));
+            }
         } catch (err) {
             const msg = getString(err, 'message');
             throw SfdxError.create('siri', 'bulkv2', 'failure', [msg]);
+        }finally{
+            this.ux.stopSpinner();
+            return responses;
         }
     }
 }

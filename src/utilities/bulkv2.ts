@@ -35,6 +35,12 @@ export class BulkV2 {
     this.ux = ux;
   }
 
+  private getFilesizeInMegaBytes(filename) {
+    var stats = fs.statSync(filename);
+    var fileSizeInBytes = stats.size;
+    return fileSizeInBytes/(1024*1024);
+  }
+
   public async operate(input: BulkV2Input): Promise<JobInfo> {
     if (input.operation === 'query') {
       this.query=true;
@@ -65,6 +71,35 @@ export class BulkV2 {
       response.data.errorMessage = response?.statusText+response.data.errorMessage;
     }
     return response.data;
+  }
+
+  public checkFileSizeAndAct(filename){
+    let files = [];
+    let size = this.getFilesizeInMegaBytes(filename);
+    if(size<20){
+      files.push(filename);
+      return files;
+    }
+    let numberOfTempFiles = Math.ceil(Math.ceil(size)/20);
+    let linesArray = fs.readFileSync(resolve(Common.cwd, filename),{encoding: "utf8"}).toString().split('\n');
+    let numberOfLinesInSingleFile = Math.ceil(linesArray.length/numberOfTempFiles);
+    let result = linesArray.reduce((resultArray, item, index) => { 
+      const chunkIndex = Math.floor(index/numberOfLinesInSingleFile)
+    
+      if(!resultArray[chunkIndex]) {
+        resultArray[chunkIndex] = [] // start a new chunk
+      }
+    
+      resultArray[chunkIndex].push(item)
+    
+      return resultArray
+    }, []);
+    
+    for(let i=0;i<result.length;i++){
+      files.push("temp"+i+".csv");
+      fs.writeFileSync("temp"+i+".csv", ((i==0)?'':'"Id"\n')+result[i].join('\n'),{ encoding: "utf8"});
+    }
+    return files;
   }
 
   private async patchJob(job:JobInfo):Promise<JobInfo>{
@@ -206,7 +241,9 @@ export class BulkV2 {
       headers: {
         'Content-Type': contentType,
         Authorization: `Bearer ${this.conn.accessToken}`,
-      }
+      },
+      'maxContentLength': Infinity,
+      'maxBodyLength': Infinity
     };
     return config;
   }

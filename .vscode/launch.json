@@ -7,14 +7,16 @@
     {
       "name": "Debug Plugin",
       "program": "${workspaceFolder}/bin/run",
-      //"args": ["siri:data:bulkv2:status", "-i", "7505r0000014fGmAAI"],
-      "args": ["siri:data:bulkv2:upsert", "-s", "Account","-i","external_Id__c","-f","bulk-insert-accounts.csv"],
+      "args": ["siri:data:bulkv2:delete","-s","OrderItem","-f","empty-shipement-records.csv"],
+      //"args": ["siri:data:bulkv2:results", "-i", "7500900000BT61N","-t","QUERY_RESULT","-o","oil.csv"],
+      //"args": ["siri:data:bulkv2:upsert", "-s", "Account","-i","external_Id__c","-f","bulk-insert-accounts.csv"],
+      //"args": ["siri:data:bulkv2:query", "-s", "Product2","-o","zwanger.csv","-q","Select Id FROM PRODUCT2"],
       "request": "launch",
       "skipFiles": [
         "<node_internals>/**"
       ],
       "type": "pwa-node",
-      "cwd": "/Users/venkatkoppolu/Documents/lwc-cx/lwc-practice/",
+      "cwd": "/Users/venkatkoppolu/Documents/Orange/prenatal-sc/",
       "stopOnEntry": true
     },
     {
