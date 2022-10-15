@@ -45,9 +45,10 @@ export class BulkV2 {
     if (input.operation === 'query') {
       this.query=true;
       let job: JobInfo = await this.createJob(input);
-      do{
+      //do{
+
         job = await this.status(job.id);
-      }while(!(job.state==='JobComplete' || job.state==='Failed' || job.state==='Aborted'));
+     // }while(!(job.state==='JobComplete' || job.state==='Failed' || job.state==='Aborted'));
       if(job.state==='JobComplete'){
         await this.results(job.id,'QUERY_RESULT',input.csvfile);
       }else{
@@ -136,35 +137,55 @@ export class BulkV2 {
 
   public async moreResults(endpoint:string,locator:string,file: string): Promise<any> {
     try{
-      let response=await axios.get(endpoint+'?locator='+locator,this.generateConfig('text/csv'));
-      fs.appendFileSync(resolve(Common.cwd,file),response.data);
+      let config: AxiosRequestConfig = this.generateConfig('text/csv');
+      config.responseType= 'stream';
+      let response=await axios.get(endpoint+'?locator='+locator,config);
+      this.fastFileWrite(file,response.data).then().catch();
+      //fs.writeFileSync(resolve(Common.cwd,file),response.data);
+      //fs.appendFileSync(resolve(Common.cwd,file),response.data);
       return response;
     }catch(err){
       return err;
     }
   }
 
+  public async fastFileWrite(file: string,data:any){
+    var writeStream = fs.createWriteStream(resolve(Common.cwd,file), { flags : 'w' });
+    //var readStream = new MyReadStream();
+    data.pipe(writeStream);
+    writeStream.on('close', function () {
+      console.log(file+'write complete.');
+  });
+  }
+
   public async results(jobid: string,type: string,file: string): Promise<boolean> {
     this.query=type.includes('QUERY');
     let job:JobInfo=await this.status(jobid);
-    if(job.state !== 'JobComplete'){
+    if(!(job.state == 'JobComplete' || job.state == 'Failed')){
       this.ux.log(messages.getMessage('jobStatusInfo', [job.id, job.state]));
       return false;
     }
     
     let endpoint = this.generateEndpont(type, jobid);
     let config: AxiosRequestConfig = this.generateConfig('application/json');
+    config.responseType= 'stream';
     return axios.get(endpoint, config).then(response => {
       return new Promise(async (resolved, rejected) => {
         try{
-          fs.writeFileSync(resolve(Common.cwd,file),response.data);
+          this.fastFileWrite(file,response.data).then().catch();
+          // fs.writeFileSync(resolve(Common.cwd,file),response.data);
           ///services/data/vXX.X/jobs/query/queryJobId/results?locator=locator
           let locator = response.headers['sforce-locator'];
           //let maxRecords = response.headers['sforce-numberofrecords'];
+          let filename = file.substring(0,file.length-4);
+          let i=0;
           while(locator){
+            i++;
+            file =filename+i+'.csv';
             let res=await this.moreResults(endpoint,locator,file);
             if('headers' in res && 'sforce-locator' in res.headers){
             locator=res.headers['sforce-locator'];
+            
             //maxRecords=res.headers['sforce-numberofrecords'];
             }else{
               locator=null; 

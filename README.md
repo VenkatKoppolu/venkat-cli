@@ -22,7 +22,7 @@ $ npm install -g siri
 $ sfdx COMMAND
 running command...
 $ sfdx (-v|--version|version)
-siri/0.0.0 darwin-x64 node-v14.17.3
+siri/0.0.0 darwin-arm64 node-v16.14.0
 $ sfdx --help [COMMAND]
 USAGE
   $ sfdx COMMAND
