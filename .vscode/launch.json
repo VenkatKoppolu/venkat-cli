@@ -7,17 +7,17 @@
     {
       "name": "Debug Plugin",
       "program": "${workspaceFolder}/bin/run",
-      //"args": ["siri:data:bulkv2:query","-s","EmailMessage","-o","emailmessage.csv","-u","basic-fit-fullsandbox","-q","select Id,Subject,TextBody,BccAddress,BccIds,CcAddress,CcIds,ContentDocumentIds,EmailTemplateId,FromAddress,FromName,ToAddress,Incoming,IsClientManaged,MessageDate,MessageIdentifier,ParentId,RelatedToId,ReplyToEmailMessageId,Status from EmailMessage  where Data_Storage_Copy__c = false AND LastModifiedDate > LAST_N_MONTHS:2 AND status != '5' and Parent.status IN ('closed','resolved')"],
-      "args": ["siri:data:bulkv2:query","-s","et4ae5__IndividualEmailResult__c","-o","IERs555.csv","-u","venkat.koppolu@basic-fit.com","-q","SELECT CreatedById, CreatedDate, Id, LastModifiedById, LastModifiedDate, Name, OwnerId, et4ae5__CampaignMemberId__c, et4ae5__Clicked__c, et4ae5__Contact_ID__c, et4ae5__Contact__c, et4ae5__DateBounced__c, et4ae5__DateOpened__c, et4ae5__DateSent__c, et4ae5__DateUnsubscribed__c, et4ae5__Email_Asset_ID__c, et4ae5__Email_ID__c, et4ae5__Email__c, et4ae5__FromAddress__c, et4ae5__FromName__c, et4ae5__HardBounce__c, et4ae5__Lead_ID__c, et4ae5__Lead__c, et4ae5__MergeId__c, et4ae5__NumberOfTotalClicks__c, et4ae5__NumberOfUniqueClicks__c, et4ae5__Opened__c, et4ae5__SendDefinition__c, et4ae5__SoftBounce__c, et4ae5__SubjectLine__c, et4ae5__Tracking_As_Of__c, et4ae5__TriggeredSendDefinitionName__c, et4ae5__TriggeredSendDefinition__c FROM et4ae5__IndividualEmailResult__c WHERE CreatedDate < LAST_N_MONTHS:30"],
-      //"args": ["siri:data:bulkv2:delete","-s","et4ae5__IndividualEmailResult__c","-f","deleteIERs.csv"],
-      //"args": ["siri:data:bulkv2:results", "-i", "7505I00000JncXb","-t","QUERY_RESULT","-o","iers.csv","-u","venkat.koppolu@basic-fit.com"],
+      //"args": ["siri:data:bulkv2:query","-s","Case","-o","cases.csv","-u","basic-fit-uat","-q","select Id,Origin From Case"],
+      //"args": ["siri:data:bulkv2:query","-s","et4ae5__IndividualEmailResult__c","-o","IERs555.csv","-u","venkat.koppolu@basic-fit.com","-q","SELECT CreatedById, CreatedDate, Id, LastModifiedById, LastModifiedDate, Name, OwnerId, et4ae5__CampaignMemberId__c, et4ae5__Clicked__c, et4ae5__Contact_ID__c, et4ae5__Contact__c, et4ae5__DateBounced__c, et4ae5__DateOpened__c, et4ae5__DateSent__c, et4ae5__DateUnsubscribed__c, et4ae5__Email_Asset_ID__c, et4ae5__Email_ID__c, et4ae5__Email__c, et4ae5__FromAddress__c, et4ae5__FromName__c, et4ae5__HardBounce__c, et4ae5__Lead_ID__c, et4ae5__Lead__c, et4ae5__MergeId__c, et4ae5__NumberOfTotalClicks__c, et4ae5__NumberOfUniqueClicks__c, et4ae5__Opened__c, et4ae5__SendDefinition__c, et4ae5__SoftBounce__c, et4ae5__SubjectLine__c, et4ae5__Tracking_As_Of__c, et4ae5__TriggeredSendDefinitionName__c, et4ae5__TriggeredSendDefinition__c FROM et4ae5__IndividualEmailResult__c WHERE CreatedDate < LAST_N_MONTHS:30"],
+      //"args": ["siri:data:bulkv2:delete","-s","SetupAuditTrail__c","-f","combined-files.csv","-h"],
+      //"args": ["siri:data:bulkv2:results", "-i", "7505I00000ZStEJQA1","-t","QUERY_RESULT","-o","scripts/data/uat-cases.csv","-u","basic-fit-uat"],
       //"args": ["siri:data:bulkv2:upsert", "-s", "Account","-i","external_Id__c","-f","bulk-insert-accounts.csv"],
-      //"args": ["siri:data:bulkv2:query", "-s", "Product2","-o","zwanger.csv","-q","Select Id FROM PRODUCT2"],
+      //"args": ["siri:data:bulkv2:status", "-i", "7505I00000ZStfPQAT"],
       "request": "launch",
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "type": "pwa-node",
+      "type": "node",
       "cwd": "/Users/venkatkoppolu/Documents/scripts/data",
       "stopOnEntry": true
     },

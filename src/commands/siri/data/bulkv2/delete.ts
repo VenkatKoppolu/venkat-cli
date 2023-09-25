@@ -39,7 +39,7 @@ export default class BulkV2Delete extends SfdxCommand {
             default: "COMMA"
         }),
         hardelete: flags.boolean({
-            char: "h",
+            char: "x",
             description: messages.getMessage("harddeleteDescription"),
             required: false,
             default: false

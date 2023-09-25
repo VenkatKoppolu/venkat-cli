@@ -18,28 +18,25 @@ cli plugins named after my daughter.
 <!-- install -->
 <!-- usage -->
 ```sh-session
-$ npm install -g siri
-$ sfdx COMMAND
-running command...
-$ sfdx (-v|--version|version)
-siri/0.0.0 darwin-arm64 node-v16.14.0
-$ sfdx --help [COMMAND]
-USAGE
-  $ sfdx COMMAND
+$ npm install -g siri [not working, follow below guidelines]
+
+git clone https://github.com/VenkatKoppolu/venkat-cli
+$ sfdx plugins link venkat-cli
+
 ...
 ```
 <!-- usagestop -->
 <!-- commands -->
-* [`sfdx siri:data:bulkv2:delete -s <string> -f <string> [-l <string>] [-d <string>] [-h] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2delete--s-string--f-string--l-string--d-string--h--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx siri:data:bulkv2:delete -s <string> -f <string> [-l <string>] [-d <string>] [-x] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2delete--s-string--f-string--l-string--d-string--x--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx siri:data:bulkv2:insert -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2insert--s-string--f-string--l-string--d-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx siri:data:bulkv2:query -s <string> -q <string> -o <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2query--s-string--q-string--o-string--l-string--d-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx siri:data:bulkv2:results -i <string> -t <string> -o <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2results--i-string--t-string--o-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx siri:data:bulkv2:status -i <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2status--i-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx siri:data:bulkv2:status -i <string> [-t <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2status--i-string--t-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx siri:data:bulkv2:update -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2update--s-string--f-string--l-string--d-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx siri:data:bulkv2:upsert -s <string> -i <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2upsert--s-string--i-string--f-string--l-string--d-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx siri:org [-n <string>] [-f] [-v <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siriorg--n-string--f--v-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
-## `sfdx siri:data:bulkv2:delete -s <string> -f <string> [-l <string>] [-d <string>] [-h] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sfdx siri:data:bulkv2:delete -s <string> -f <string> [-l <string>] [-d <string>] [-x] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 Delete or hard delete the records using BulkV2 API.
 
@@ -47,7 +44,7 @@ Delete or hard delete the records using BulkV2 API.
 Delete or hard delete the records using BulkV2 API.
 
 USAGE
-  $ sfdx siri:data:bulkv2:delete -s <string> -f <string> [-l <string>] [-d <string>] [-h] [-u <string>] [--apiversion 
+  $ sfdx siri:data:bulkv2:delete -s <string> -f <string> [-l <string>] [-d <string>] [-x] [-u <string>] [--apiversion 
   <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
@@ -63,10 +60,6 @@ OPTIONS
   -f, --csvfile=csvfile
       (required) (required) the path to the CSV file that defines the records to upsert
 
-  -h, --hardelete
-      (optional) if specified then the deleted records aren't stored in the Recycle Bin. 
-        permission “Bulk API Hard Delete” should be set for the user to perform hardDelete.
-
   -l, --lineending=lineending
       [default: LF] (optional) The line ending used for CSV job data, marking the end of a data row. The default is LF. 
       Valid values are:
@@ -78,6 +71,10 @@ OPTIONS
 
   -u, --targetusername=targetusername
       username or alias for the target org; overrides default target org
+
+  -x, --hardelete
+      (optional) if specified then the deleted records aren't stored in the Recycle Bin. 
+        permission “Bulk API Hard Delete” should be set for the user to perform hardDelete.
 
   --apiversion=apiversion
       override the api version used for api requests made by this command
@@ -241,7 +238,7 @@ EXAMPLE
 
 _See code: [src/commands/siri/data/bulkv2/results.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/results.ts)_
 
-## `sfdx siri:data:bulkv2:status -i <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sfdx siri:data:bulkv2:status -i <string> [-t <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 get the status of the BulkV2 job.
 
@@ -249,12 +246,15 @@ get the status of the BulkV2 job.
 get the status of the BulkV2 job.
 
 USAGE
-  $ sfdx siri:data:bulkv2:status -i <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel 
+  $ sfdx siri:data:bulkv2:status -i <string> [-t <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel 
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
   -i, --jobid=jobid                                                                 (required) (required) the job id
                                                                                     that is operated in the org.
+
+  -t, --type=type                                                                   specify QUERY_STATUS if you want to check
+                                                                                    the status of query job.
 
   -u, --targetusername=targetusername                                               username or alias for the target
                                                                                     org; overrides default target org

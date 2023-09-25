@@ -47,7 +47,7 @@ export class BulkV2 {
       let job: JobInfo = await this.createJob(input);
       //do{
 
-        job = await this.status(job.id);
+        job = await this.status(job.id,'QUERY_STATUS');
      // }while(!(job.state==='JobComplete' || job.state==='Failed' || job.state==='Aborted'));
       if(job.state==='JobComplete'){
         await this.results(job.id,'QUERY_RESULT',input.csvfile);
@@ -59,12 +59,13 @@ export class BulkV2 {
       let job: JobInfo = await this.createJob(input);
       job = await this.uploadJob(job, input.csvfile);
       job = await this.patchJob(job);
-      job = await this.status(job.id);
+      job = await this.status(job.id,'');
       return job;
     }
   }
 
-  public async status(jobid:string):Promise<JobInfo>{
+  public async status(jobid:string,type: string):Promise<JobInfo>{
+    this.query=type.includes('QUERY');
     let endpoint = this.generateEndpont((this.query)?'QUERY_STATUS':'STATUS', jobid);
     let config: AxiosRequestConfig = this.generateConfig('application/json');
     let response: AxiosResponse = await axios.get(endpoint, config);
@@ -160,7 +161,7 @@ export class BulkV2 {
 
   public async results(jobid: string,type: string,file: string): Promise<boolean> {
     this.query=type.includes('QUERY');
-    let job:JobInfo=await this.status(jobid);
+    let job:JobInfo=await this.status(jobid,this.query?'QUERY_STATUS':'');
     if(!(job.state == 'JobComplete' || job.state == 'Failed')){
       this.ux.log(messages.getMessage('jobStatusInfo', [job.id, job.state]));
       return false;

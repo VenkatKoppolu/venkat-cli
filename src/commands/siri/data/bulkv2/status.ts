@@ -17,6 +17,11 @@ export default class BulkV2Status extends SfdxCommand {
       char: "i",
       description: messages.getMessage("jobIdDescription"),
       required: true
+    }),
+    type: flags.string({
+      char: "t",
+      description: messages.getMessage("typeDescription"),
+      required: false
     })
   };
   protected static requiresUsername = true;
@@ -25,7 +30,7 @@ export default class BulkV2Status extends SfdxCommand {
     this.ux.startSpinner('Getting Status');
     try {
       let bulkv2 = new BulkV2(this.org.getConnection(), this.ux);
-      let jobsummary: JobInfo = await bulkv2.status(this.flags.jobid);
+      let jobsummary: JobInfo = await bulkv2.status(this.flags.jobid,this.flags.type?.toUpperCase());
       bulkv2.statusSummary(jobsummary);
       this.ux.stopSpinner();
       return jobsummary;
