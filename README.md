@@ -18,11 +18,14 @@ cli plugins named after my daughter.
 <!-- install -->
 <!-- usage -->
 ```sh-session
-$ npm install -g siri [not working, follow below guidelines]
-
-git clone https://github.com/VenkatKoppolu/venkat-cli
-$ sfdx plugins link venkat-cli
-
+$ npm install -g siri
+$ sfdx COMMAND
+running command...
+$ sfdx (-v|--version|version)
+siri/0.0.2 darwin-arm64 node-v18.19.0
+$ sfdx --help [COMMAND]
+USAGE
+  $ sfdx COMMAND
 ...
 ```
 <!-- usagestop -->
@@ -90,7 +93,7 @@ EXAMPLES
   sfdx siri:data:bulkv2:delete -u me@my.org -s Account --hardelete -f /csv/file/path/csvfile.csv
 ```
 
-_See code: [src/commands/siri/data/bulkv2/delete.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/delete.ts)_
+_See code: [src/commands/siri/data/bulkv2/delete.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/delete.ts)_
 
 ## `sfdx siri:data:bulkv2:insert -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -141,7 +144,7 @@ EXAMPLE
   sfdx siri:data:bulkv2:insert -u me@my.org -s Account -f /csv/file/path/csvfile.csv
 ```
 
-_See code: [src/commands/siri/data/bulkv2/insert.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/insert.ts)_
+_See code: [src/commands/siri/data/bulkv2/insert.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/insert.ts)_
 
 ## `sfdx siri:data:bulkv2:query -s <string> -q <string> -o <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -195,7 +198,7 @@ EXAMPLE
   sfdx siri:data:bulkv2:query -u me@my.org -s Account -q "SELECT Id FROM ACCOUNT" -o /csv/file/path/csvfile.csv
 ```
 
-_See code: [src/commands/siri/data/bulkv2/query.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/query.ts)_
+_See code: [src/commands/siri/data/bulkv2/query.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/query.ts)_
 
 ## `sfdx siri:data:bulkv2:results -i <string> -t <string> -o <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -236,7 +239,7 @@ EXAMPLE
   sfdx siri:data:bulkv2:results -u me@my.org -i 7505r0000xxxxxxxxx -t success -o /csv/output/file/path/csvfile.csv
 ```
 
-_See code: [src/commands/siri/data/bulkv2/results.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/results.ts)_
+_See code: [src/commands/siri/data/bulkv2/results.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/results.ts)_
 
 ## `sfdx siri:data:bulkv2:status -i <string> [-t <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -253,8 +256,9 @@ OPTIONS
   -i, --jobid=jobid                                                                 (required) (required) the job id
                                                                                     that is operated in the org.
 
-  -t, --type=type                                                                   specify QUERY_STATUS if you want to check
-                                                                                    the status of query job.
+  -t, --type=type                                                                   (required) specify one of success,
+                                                                                    failed and unprocessed values to get
+                                                                                    respective results from the job.
 
   -u, --targetusername=targetusername                                               username or alias for the target
                                                                                     org; overrides default target org
@@ -271,7 +275,7 @@ EXAMPLE
   sfdx siri:data:bulkv2:status -u me@my.org  -i 7505r0000xxxxxxxxx(jobid)
 ```
 
-_See code: [src/commands/siri/data/bulkv2/status.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/status.ts)_
+_See code: [src/commands/siri/data/bulkv2/status.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/status.ts)_
 
 ## `sfdx siri:data:bulkv2:update -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -322,7 +326,7 @@ EXAMPLE
   sfdx siri:data:bulkv2:update -u me@my.org -s Account -f /csv/file/path/csvfile.csv
 ```
 
-_See code: [src/commands/siri/data/bulkv2/update.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/update.ts)_
+_See code: [src/commands/siri/data/bulkv2/update.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/update.ts)_
 
 ## `sfdx siri:data:bulkv2:upsert -s <string> -i <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -376,7 +380,7 @@ EXAMPLE
   sfdx siri:data:bulkv2:upsert -u me@my.org -s Account -i externalId__c -f /csv/file/path/csvfile.csv
 ```
 
-_See code: [src/commands/siri/data/bulkv2/upsert.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/data/bulkv2/upsert.ts)_
+_See code: [src/commands/siri/data/bulkv2/upsert.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/upsert.ts)_
 
 ## `sfdx siri:org [-n <string>] [-f] [-v <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -416,7 +420,7 @@ EXAMPLES
      Hello myname! This is org: MyOrg and I will be around until Tue Mar 20 2018!
 ```
 
-_See code: [src/commands/siri/org.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.0/src/commands/siri/org.ts)_
+_See code: [src/commands/siri/org.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/org.ts)_
 <!-- commandsstop -->
 <!-- debugging-your-plugin -->
 # Debugging your plugin
