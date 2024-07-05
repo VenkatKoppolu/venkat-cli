@@ -1,18 +1,11 @@
 {
-  "extends": "./node_modules/@salesforce/dev-config/tsconfig",
-  "compileOnSave": true,
+  "extends": "@salesforce/dev-config/tsconfig-strict-esm",
   "compilerOptions": {
-    "declaration": true,
-    "outDir": "./lib",
-    "importHelpers": true,
-    "rootDir": "./src",
-    "lib": ["DOM"]
+    "outDir": "lib",
+    "rootDir": "src",
+    "target": "ES2017",
+    "strict": true,
+    "esModuleInterop": true
   },
-  "include": [
-    "./src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "lib"
-  ]
+  "include": ["./src/**/*.ts"]
 }

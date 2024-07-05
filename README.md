@@ -1,448 +1,145 @@
-siri
-====
+# siri
 
-cli plugins named after my daughter.
+[![NPM](https://img.shields.io/npm/v/siri.svg?label=siri)](https://www.npmjs.com/package/siri) [![Downloads/week](https://img.shields.io/npm/dw/siri.svg)](https://npmjs.org/package/siri) [![License](https://img.shields.io/badge/License-BSD%203--Clause-brightgreen.svg)](https://raw.githubusercontent.com/salesforcecli/siri/main/LICENSE.txt)
 
-[![Version](https://img.shields.io/npm/v/siri.svg)](https://npmjs.org/package/siri)
-[![CircleCI](https://circleci.com/gh/https://github.com/VenkatKoppolu/venkat-cli/tree/master.svg?style=shield)](https://circleci.com/gh/https://github.com/VenkatKoppolu/venkat-cli/tree/master)
-[![Appveyor CI](https://ci.appveyor.com/api/projects/status/github/https://github.com/VenkatKoppolu/venkat-cli?branch=master&svg=true)](https://ci.appveyor.com/project/heroku/venkat-cli/branch/master)
-[![Codecov](https://codecov.io/gh/https://github.com/VenkatKoppolu/venkat-cli/branch/master/graph/badge.svg)](https://codecov.io/gh/https://github.com/VenkatKoppolu/venkat-cli)
-[![Greenkeeper](https://badges.greenkeeper.io/https://github.com/VenkatKoppolu/venkat-cli.svg)](https://greenkeeper.io/)
-[![Known Vulnerabilities](https://snyk.io/test/github/https://github.com/VenkatKoppolu/venkat-cli/badge.svg)](https://snyk.io/test/github/https://github.com/VenkatKoppolu/venkat-cli)
-[![Downloads/week](https://img.shields.io/npm/dw/siri.svg)](https://npmjs.org/package/siri)
-[![License](https://img.shields.io/npm/l/siri.svg)](https://github.com/https://github.com/VenkatKoppolu/venkat-cli/blob/master/package.json)
+## Using the template
 
-<!-- toc -->
-* [Debugging your plugin](#debugging-your-plugin)
-<!-- tocstop -->
-<!-- install -->
-<!-- usage -->
-```sh-session
-$ npm install -g siri
-$ sfdx COMMAND
-running command...
-$ sfdx (-v|--version|version)
-siri/0.0.2 darwin-arm64 node-v18.19.0
-$ sfdx --help [COMMAND]
-USAGE
-  $ sfdx COMMAND
-...
+This repository provides a template for creating a plugin for the Salesforce CLI. To convert this template to a working plugin:
+
+1. Please get in touch with the Platform CLI team. We want to help you develop your plugin.
+2. Generate your plugin:
+
+   ```
+   sf plugins install dev
+   sf dev generate plugin
+
+   git init -b main
+   git add . && git commit -m "chore: initial commit"
+   ```
+
+3. Create your plugin's repo in the salesforcecli github org
+4. When you're ready, replace the contents of this README with the information you want.
+
+## Learn about `sf` plugins
+
+Salesforce CLI plugins are based on the [oclif plugin framework](<(https://oclif.io/docs/introduction.html)>). Read the [plugin developer guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_plugins.meta/sfdx_cli_plugins/cli_plugins_architecture_sf_cli.htm) to learn about Salesforce CLI plugin development.
+
+This repository contains a lot of additional scripts and tools to help with general Salesforce node development and enforce coding standards. You should familiarize yourself with some of the [node developer packages](#tooling) used by Salesforce.
+
+Additionally, there are some additional tests that the Salesforce CLI will enforce if this plugin is ever bundled with the CLI. These test are included by default under the `posttest` script and it is required to keep these tests active in your plugin if you plan to have it bundled.
+
+### Tooling
+
+- [@salesforce/core](https://github.com/forcedotcom/sfdx-core)
+- [@salesforce/kit](https://github.com/forcedotcom/kit)
+- [@salesforce/sf-plugins-core](https://github.com/salesforcecli/sf-plugins-core)
+- [@salesforce/ts-types](https://github.com/forcedotcom/ts-types)
+- [@salesforce/ts-sinon](https://github.com/forcedotcom/ts-sinon)
+- [@salesforce/dev-config](https://github.com/forcedotcom/dev-config)
+- [@salesforce/dev-scripts](https://github.com/forcedotcom/dev-scripts)
+
+### Hooks
+
+For cross clouds commands, e.g. `sf env list`, we utilize [oclif hooks](https://oclif.io/docs/hooks) to get the relevant information from installed plugins.
+
+This plugin includes sample hooks in the [src/hooks directory](src/hooks). You'll just need to add the appropriate logic. You can also delete any of the hooks if they aren't required for your plugin.
+
+# Everything past here is only a suggestion as to what should be in your specific plugin's description
+
+This plugin is bundled with the [Salesforce CLI](https://developer.salesforce.com/tools/sfdxcli). For more information on the CLI, read the [getting started guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm).
+
+We always recommend using the latest version of these commands bundled with the CLI, however, you can install a specific version or tag if needed.
+
+## Install
+
+```bash
+sf plugins install siri@x.y.z
 ```
-<!-- usagestop -->
+
+## Issues
+
+Please report any issues at https://github.com/forcedotcom/cli/issues
+
+## Contributing
+
+1. Please read our [Code of Conduct](CODE_OF_CONDUCT.md)
+2. Create a new issue before starting your project so that we can keep track of
+   what you are trying to add/fix. That way, we can also offer suggestions or
+   let you know if there is already an effort in progress.
+3. Fork this repository.
+4. [Build the plugin locally](#build)
+5. Create a _topic_ branch in your fork. Note, this step is recommended but technically not required if contributing using a fork.
+6. Edit the code in your fork.
+7. Write appropriate tests for your changes. Try to achieve at least 95% code coverage on any new code. No pull request will be accepted without unit tests.
+8. Sign CLA (see [CLA](#cla) below).
+9. Send us a pull request when you are done. We'll review your code, suggest any needed changes, and merge it in.
+
+### CLA
+
+External contributors will be required to sign a Contributor's License
+Agreement. You can do so by going to https://cla.salesforce.com/sign-cla.
+
+### Build
+
+To build the plugin locally, make sure to have yarn installed and run the following commands:
+
+```bash
+# Clone the repository
+git clone git@github.com:salesforcecli/siri
+
+# Install the dependencies and compile
+yarn && yarn build
+```
+
+To use your plugin, run using the local `./bin/dev` or `./bin/dev.cmd` file.
+
+```bash
+# Run using local run file.
+./bin/dev hello world
+```
+
+There should be no differences when running via the Salesforce CLI or using the local run file. However, it can be useful to link the plugin to do some additional testing or run your commands from anywhere on your machine.
+
+```bash
+# Link your plugin to the sf cli
+sf plugins link .
+# To verify
+sf plugins
+```
+
+## Commands
+
 <!-- commands -->
-* [`sfdx siri:data:bulkv2:delete -s <string> -f <string> [-l <string>] [-d <string>] [-x] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2delete--s-string--f-string--l-string--d-string--x--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx siri:data:bulkv2:insert -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2insert--s-string--f-string--l-string--d-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx siri:data:bulkv2:query -s <string> -q <string> -o <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2query--s-string--q-string--o-string--l-string--d-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx siri:data:bulkv2:results -i <string> -t <string> -o <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2results--i-string--t-string--o-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx siri:data:bulkv2:status -i <string> [-t <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2status--i-string--t-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx siri:data:bulkv2:update -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2update--s-string--f-string--l-string--d-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx siri:data:bulkv2:upsert -s <string> -i <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siridatabulkv2upsert--s-string--i-string--f-string--l-string--d-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx siri:org [-n <string>] [-f] [-v <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-siriorg--n-string--f--v-string--u-string---apiversion-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
-## `sfdx siri:data:bulkv2:delete -s <string> -f <string> [-l <string>] [-d <string>] [-x] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+- [`sf hello world`](#sf-hello-world)
 
-Delete or hard delete the records using BulkV2 API.
+## `sf hello world`
+
+Say hello either to the world or someone you know.
 
 ```
-Delete or hard delete the records using BulkV2 API.
-
 USAGE
-  $ sfdx siri:data:bulkv2:delete -s <string> -f <string> [-l <string>] [-d <string>] [-x] [-u <string>] [--apiversion 
-  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf hello world [--json] [-n <value>]
 
-OPTIONS
-  -d, --columndelimiter=columndelimiter
-      [default: COMMA] The column delimiter used for CSV job data. The default value is COMMA. Valid values are:
-      BACKQUOTE—backquote character (`)
-      CARET—caret character (^)
-      COMMA—comma character (,) which is the default delimiter
-      PIPE—pipe character (|)
-      SEMICOLON—semicolon character (;)
-      TAB—tab character
+FLAGS
+  -n, --name=<value>  [default: World] The name of the person you'd like to say hello to.
 
-  -f, --csvfile=csvfile
-      (required) (required) the path to the CSV file that defines the records to upsert
+GLOBAL FLAGS
+  --json  Format output as json.
 
-  -l, --lineending=lineending
-      [default: LF] (optional) The line ending used for CSV job data, marking the end of a data row. The default is LF. 
-      Valid values are:
-      LF—linefeed character
-      CRLF—carriage return character followed by a linefeed character
+DESCRIPTION
+  Say hello either to the world or someone you know.
 
-  -s, --sobjecttype=sobjecttype
-      (required) (required) the sObject type of the records you want to upsert
-
-  -u, --targetusername=targetusername
-      username or alias for the target org; overrides default target org
-
-  -x, --hardelete
-      (optional) if specified then the deleted records aren't stored in the Recycle Bin. 
-        permission “Bulk API Hard Delete” should be set for the user to perform hardDelete.
-
-  --apiversion=apiversion
-      override the api version used for api requests made by this command
-
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
+  Say hello either to the world or someone you know.
 
 EXAMPLES
-  sfdx siri:data:bulkv2:delete -u me@my.org -s Account -f /csv/file/path/csvfile.csv
-  sfdx siri:data:bulkv2:delete -u me@my.org -s Account --hardelete -f /csv/file/path/csvfile.csv
+  Say hello to the world:
+
+    $ sf hello world
+
+  Say hello to someone you know:
+
+    $ sf hello world --name Astro
 ```
 
-_See code: [src/commands/siri/data/bulkv2/delete.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/delete.ts)_
-
-## `sfdx siri:data:bulkv2:insert -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
-
-Inserts records into the org using BulkV2 API.
-
-```
-Inserts records into the org using BulkV2 API.
-
-USAGE
-  $ sfdx siri:data:bulkv2:insert -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion 
-  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -d, --columndelimiter=columndelimiter
-      [default: COMMA] The column delimiter used for CSV job data. The default value is COMMA. Valid values are:
-      BACKQUOTE—backquote character (`)
-      CARET—caret character (^)
-      COMMA—comma character (,) which is the default delimiter
-      PIPE—pipe character (|)
-      SEMICOLON—semicolon character (;)
-      TAB—tab character
-
-  -f, --csvfile=csvfile
-      (required) (required) the path to the CSV file that defines the records to upsert
-
-  -l, --lineending=lineending
-      [default: LF] (optional) The line ending used for CSV job data, marking the end of a data row. The default is LF. 
-      Valid values are:
-      LF—linefeed character
-      CRLF—carriage return character followed by a linefeed character
-
-  -s, --sobjecttype=sobjecttype
-      (required) (required) the sObject type of the records you want to upsert
-
-  -u, --targetusername=targetusername
-      username or alias for the target org; overrides default target org
-
-  --apiversion=apiversion
-      override the api version used for api requests made by this command
-
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
-
-EXAMPLE
-  sfdx siri:data:bulkv2:insert -u me@my.org -s Account -f /csv/file/path/csvfile.csv
-```
-
-_See code: [src/commands/siri/data/bulkv2/insert.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/insert.ts)_
-
-## `sfdx siri:data:bulkv2:query -s <string> -q <string> -o <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
-
-Executes the query against the data in your default scratch org using BulkV2 API.
-
-```
-Executes the query against the data in your default scratch org using BulkV2 API.
-
-USAGE
-  $ sfdx siri:data:bulkv2:query -s <string> -q <string> -o <string> [-l <string>] [-d <string>] [-u <string>] 
-  [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -d, --columndelimiter=columndelimiter
-      [default: COMMA] The column delimiter used for CSV job data. The default value is COMMA. Valid values are:
-      BACKQUOTE—backquote character (`)
-      CARET—caret character (^)
-      COMMA—comma character (,) which is the default delimiter
-      PIPE—pipe character (|)
-      SEMICOLON—semicolon character (;)
-      TAB—tab character
-
-  -l, --lineending=lineending
-      [default: LF] (optional) The line ending used for CSV job data, marking the end of a data row. The default is LF. 
-      Valid values are:
-      LF—linefeed character
-      CRLF—carriage return character followed by a linefeed character
-
-  -o, --outputfile=outputfile
-      (required) (required) path to the csv file to which the results will be written.
-
-  -q, --query=query
-      (required) Executes the query against the data in your default scratch org using BulkV2 API.
-
-  -s, --sobjecttype=sobjecttype
-      (required) (required) the sObject type of the records you want to upsert
-
-  -u, --targetusername=targetusername
-      username or alias for the target org; overrides default target org
-
-  --apiversion=apiversion
-      override the api version used for api requests made by this command
-
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
-
-EXAMPLE
-  sfdx siri:data:bulkv2:query -u me@my.org -s Account -q "SELECT Id FROM ACCOUNT" -o /csv/file/path/csvfile.csv
-```
-
-_See code: [src/commands/siri/data/bulkv2/query.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/query.ts)_
-
-## `sfdx siri:data:bulkv2:results -i <string> -t <string> -o <string> [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
-
-fetch the results for a specific BulkV2 job after execution is completed.
-
-```
-fetch the results for a specific BulkV2 job after execution is completed.
-
-USAGE
-  $ sfdx siri:data:bulkv2:results -i <string> -t <string> -o <string> [-u <string>] [--apiversion <string>] [--json] 
-  [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -i, --jobid=jobid                                                                 (required) (required) the job id
-                                                                                    that is operated in the org.
-
-  -o, --outputfile=outputfile                                                       (required) (required) path to the
-                                                                                    csv file to which the results will
-                                                                                    be written.
-
-  -t, --type=type                                                                   (required) (required) specify one of
-                                                                                    success, failed and unprocessed
-                                                                                    values to get respective results
-                                                                                    from the job.
-
-  -u, --targetusername=targetusername                                               username or alias for the target
-                                                                                    org; overrides default target org
-
-  --apiversion=apiversion                                                           override the api version used for
-                                                                                    api requests made by this command
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-EXAMPLE
-  sfdx siri:data:bulkv2:results -u me@my.org -i 7505r0000xxxxxxxxx -t success -o /csv/output/file/path/csvfile.csv
-```
-
-_See code: [src/commands/siri/data/bulkv2/results.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/results.ts)_
-
-## `sfdx siri:data:bulkv2:status -i <string> [-t <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
-
-get the status of the BulkV2 job.
-
-```
-get the status of the BulkV2 job.
-
-USAGE
-  $ sfdx siri:data:bulkv2:status -i <string> [-t <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -i, --jobid=jobid                                                                 (required) (required) the job id
-                                                                                    that is operated in the org.
-
-  -t, --type=type                                                                   (required) specify one of success,
-                                                                                    failed and unprocessed values to get
-                                                                                    respective results from the job.
-
-  -u, --targetusername=targetusername                                               username or alias for the target
-                                                                                    org; overrides default target org
-
-  --apiversion=apiversion                                                           override the api version used for
-                                                                                    api requests made by this command
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-EXAMPLE
-  sfdx siri:data:bulkv2:status -u me@my.org  -i 7505r0000xxxxxxxxx(jobid)
-```
-
-_See code: [src/commands/siri/data/bulkv2/status.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/status.ts)_
-
-## `sfdx siri:data:bulkv2:update -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
-
-Updates records into the org using BulkV2 API.
-
-```
-Updates records into the org using BulkV2 API.
-
-USAGE
-  $ sfdx siri:data:bulkv2:update -s <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion 
-  <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -d, --columndelimiter=columndelimiter
-      [default: COMMA] The column delimiter used for CSV job data. The default value is COMMA. Valid values are:
-      BACKQUOTE—backquote character (`)
-      CARET—caret character (^)
-      COMMA—comma character (,) which is the default delimiter
-      PIPE—pipe character (|)
-      SEMICOLON—semicolon character (;)
-      TAB—tab character
-
-  -f, --csvfile=csvfile
-      (required) (required) the path to the CSV file that defines the records to upsert
-
-  -l, --lineending=lineending
-      [default: LF] (optional) The line ending used for CSV job data, marking the end of a data row. The default is LF. 
-      Valid values are:
-      LF—linefeed character
-      CRLF—carriage return character followed by a linefeed character
-
-  -s, --sobjecttype=sobjecttype
-      (required) (required) the sObject type of the records you want to upsert
-
-  -u, --targetusername=targetusername
-      username or alias for the target org; overrides default target org
-
-  --apiversion=apiversion
-      override the api version used for api requests made by this command
-
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
-
-EXAMPLE
-  sfdx siri:data:bulkv2:update -u me@my.org -s Account -f /csv/file/path/csvfile.csv
-```
-
-_See code: [src/commands/siri/data/bulkv2/update.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/update.ts)_
-
-## `sfdx siri:data:bulkv2:upsert -s <string> -i <string> -f <string> [-l <string>] [-d <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
-
-upsert records from csv file to salesforce using BulkV2 API.
-
-```
-upsert records from csv file to salesforce using BulkV2 API.
-
-USAGE
-  $ sfdx siri:data:bulkv2:upsert -s <string> -i <string> -f <string> [-l <string>] [-d <string>] [-u <string>] 
-  [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -d, --columndelimiter=columndelimiter
-      [default: COMMA] The column delimiter used for CSV job data. The default value is COMMA. Valid values are:
-      BACKQUOTE—backquote character (`)
-      CARET—caret character (^)
-      COMMA—comma character (,) which is the default delimiter
-      PIPE—pipe character (|)
-      SEMICOLON—semicolon character (;)
-      TAB—tab character
-
-  -f, --csvfile=csvfile
-      (required) (required) the path to the CSV file that defines the records to upsert
-
-  -i, --externalid=externalid
-      (required) (required) the column name of the external ID
-
-  -l, --lineending=lineending
-      [default: LF] (optional) The line ending used for CSV job data, marking the end of a data row. The default is LF. 
-      Valid values are:
-      LF—linefeed character
-      CRLF—carriage return character followed by a linefeed character
-
-  -s, --sobjecttype=sobjecttype
-      (required) (required) the sObject type of the records you want to upsert
-
-  -u, --targetusername=targetusername
-      username or alias for the target org; overrides default target org
-
-  --apiversion=apiversion
-      override the api version used for api requests made by this command
-
-  --json
-      format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)
-      [default: warn] logging level for this command invocation
-
-EXAMPLE
-  sfdx siri:data:bulkv2:upsert -u me@my.org -s Account -i externalId__c -f /csv/file/path/csvfile.csv
-```
-
-_See code: [src/commands/siri/data/bulkv2/upsert.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/data/bulkv2/upsert.ts)_
-
-## `sfdx siri:org [-n <string>] [-f] [-v <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
-
-print a greeting and your org IDs
-
-```
-print a greeting and your org IDs
-
-USAGE
-  $ sfdx siri:org [-n <string>] [-f] [-v <string>] [-u <string>] [--apiversion <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
-
-OPTIONS
-  -f, --force                                                                       example boolean flag
-  -n, --name=name                                                                   name to print
-
-  -u, --targetusername=targetusername                                               username or alias for the target
-                                                                                    org; overrides default target org
-
-  -v, --targetdevhubusername=targetdevhubusername                                   username or alias for the dev hub
-                                                                                    org; overrides default dev hub org
-
-  --apiversion=apiversion                                                           override the api version used for
-                                                                                    api requests made by this command
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-EXAMPLES
-  $ sfdx siri:org --targetusername myOrg@example.com --targetdevhubusername devhub@org.com
-     Hello world! This is org: MyOrg and I will be around until Tue Mar 20 2018!
-     My hub org id is: 00Dxx000000001234
-  
-  $ sfdx siri:org --name myname --targetusername myOrg@example.com
-     Hello myname! This is org: MyOrg and I will be around until Tue Mar 20 2018!
-```
-
-_See code: [src/commands/siri/org.ts](https://github.com/VenkatKoppolu/venkat-cli/blob/v0.0.2/src/commands/siri/org.ts)_
 <!-- commandsstop -->
-<!-- debugging-your-plugin -->
-# Debugging your plugin
-We recommend using the Visual Studio Code (VS Code) IDE for your plugin development. Included in the `.vscode` directory of this plugin is a `launch.json` config file, which allows you to attach a debugger to the node process when running your commands.
-
-To debug the `siri:org` command: 
-1. Start the inspector
-  
-If you linked your plugin to the sfdx cli, call your command with the `dev-suspend` switch: 
-```sh-session
-$ sfdx siri:org -u myOrg@example.com --dev-suspend
-```
-  
-Alternatively, to call your command using the `bin/run` script, set the `NODE_OPTIONS` environment variable to `--inspect-brk` when starting the debugger:
-```sh-session
-$ NODE_OPTIONS=--inspect-brk bin/run siri:org -u myOrg@example.com
-```
-
-2. Set some breakpoints in your command code
-3. Click on the Debug icon in the Activity Bar on the side of VS Code to open up the Debug view.
-4. In the upper left hand corner of VS Code, verify that the "Attach to Remote" launch configuration has been chosen.
-5. Hit the green play button to the left of the "Attach to Remote" launch configuration window. The debugger should now be suspended on the first line of the program. 
-6. Hit the green play button at the top middle of VS Code (this play button will be to the right of the play button that you clicked in step #5).
-<br><img src=".images/vscodeScreenshot.png" width="480" height="278"><br>
-Congrats, you are debugging!
