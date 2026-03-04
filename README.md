@@ -1,145 +1,323 @@
-# siri
+# siri: Salesforce Bulk V2 API CLI Plugin
 
-[![NPM](https://img.shields.io/npm/v/siri.svg?label=siri)](https://www.npmjs.com/package/siri) [![Downloads/week](https://img.shields.io/npm/dw/siri.svg)](https://npmjs.org/package/siri) [![License](https://img.shields.io/badge/License-BSD%203--Clause-brightgreen.svg)](https://raw.githubusercontent.com/salesforcecli/siri/main/LICENSE.txt)
+> **Named after my daughter, Siri** 🎉
 
-## Using the template
+[![NPM](https://img.shields.io/npm/v/siri.svg?label=siri)](https://www.npmjs.com/package/siri) [![Downloads/week](https://img.shields.io/npm/dw/siri.svg)](https://npmjs.org/package/siri) [![License](https://img.shields.io/badge/License-BSD%203--Clause-brightgreen.svg)](https://raw.githubusercontent.com/VenkatKoppolu/venkat-cli/main/LICENSE.txt)
 
-This repository provides a template for creating a plugin for the Salesforce CLI. To convert this template to a working plugin:
+A production-grade Salesforce CLI plugin for efficient bulk data operations using the Salesforce Bulk API v2. Perform high-performance insert, update, upsert, delete, and query operations on large datasets with built-in progress tracking and comprehensive error handling.
 
-1. Please get in touch with the Platform CLI team. We want to help you develop your plugin.
-2. Generate your plugin:
+## Features
 
-   ```
-   sf plugins install dev
-   sf dev generate plugin
+- **Bulk Insert** - Load thousands of records efficiently with automatic chunking for large CSV files
+- **Bulk Update** - Update existing records at scale
+- **Bulk Upsert** - Insert or update records using external ID lookups
+- **Bulk Delete** - Remove records or hard delete (with appropriate permissions)
+- **Bulk Query** - Execute SOQL queries with result streaming to CSV
+- **Job Status Monitoring** - Track real-time progress of bulk operations
+- **Result Retrieval** - Download success, failed, or unprocessed records
+- **Smart File Handling** - Automatic splitting of large CSV files (>20MB) for optimal performance
+- **Enterprise Error Handling** - Detailed error messages with proper resource cleanup
+- **Comprehensive Testing** - 80+ test cases with full production code coverage
 
-   git init -b main
-   git add . && git commit -m "chore: initial commit"
-   ```
-
-3. Create your plugin's repo in the salesforcecli github org
-4. When you're ready, replace the contents of this README with the information you want.
-
-## Learn about `sf` plugins
-
-Salesforce CLI plugins are based on the [oclif plugin framework](<(https://oclif.io/docs/introduction.html)>). Read the [plugin developer guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_plugins.meta/sfdx_cli_plugins/cli_plugins_architecture_sf_cli.htm) to learn about Salesforce CLI plugin development.
-
-This repository contains a lot of additional scripts and tools to help with general Salesforce node development and enforce coding standards. You should familiarize yourself with some of the [node developer packages](#tooling) used by Salesforce.
-
-Additionally, there are some additional tests that the Salesforce CLI will enforce if this plugin is ever bundled with the CLI. These test are included by default under the `posttest` script and it is required to keep these tests active in your plugin if you plan to have it bundled.
-
-### Tooling
-
-- [@salesforce/core](https://github.com/forcedotcom/sfdx-core)
-- [@salesforce/kit](https://github.com/forcedotcom/kit)
-- [@salesforce/sf-plugins-core](https://github.com/salesforcecli/sf-plugins-core)
-- [@salesforce/ts-types](https://github.com/forcedotcom/ts-types)
-- [@salesforce/ts-sinon](https://github.com/forcedotcom/ts-sinon)
-- [@salesforce/dev-config](https://github.com/forcedotcom/dev-config)
-- [@salesforce/dev-scripts](https://github.com/forcedotcom/dev-scripts)
-
-### Hooks
-
-For cross clouds commands, e.g. `sf env list`, we utilize [oclif hooks](https://oclif.io/docs/hooks) to get the relevant information from installed plugins.
-
-This plugin includes sample hooks in the [src/hooks directory](src/hooks). You'll just need to add the appropriate logic. You can also delete any of the hooks if they aren't required for your plugin.
-
-# Everything past here is only a suggestion as to what should be in your specific plugin's description
-
-This plugin is bundled with the [Salesforce CLI](https://developer.salesforce.com/tools/sfdxcli). For more information on the CLI, read the [getting started guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm).
-
-We always recommend using the latest version of these commands bundled with the CLI, however, you can install a specific version or tag if needed.
-
-## Install
+## Installation
 
 ```bash
-sf plugins install siri@x.y.z
+# Install as a Salesforce CLI plugin
+sf plugins install siri@latest
+
+# Or install a specific version
+sf plugins install siri@1.0.0
 ```
 
-## Issues
+## Quick Start
 
-Please report any issues at https://github.com/forcedotcom/cli/issues
+### Insert Records
 
-## Contributing
+```bash
+sf siri data bulkv2 insert --sobjecttype Account --csvfile accounts.csv --targetusername myorg@example.com
+```
 
-1. Please read our [Code of Conduct](CODE_OF_CONDUCT.md)
-2. Create a new issue before starting your project so that we can keep track of
-   what you are trying to add/fix. That way, we can also offer suggestions or
-   let you know if there is already an effort in progress.
-3. Fork this repository.
-4. [Build the plugin locally](#build)
-5. Create a _topic_ branch in your fork. Note, this step is recommended but technically not required if contributing using a fork.
-6. Edit the code in your fork.
-7. Write appropriate tests for your changes. Try to achieve at least 95% code coverage on any new code. No pull request will be accepted without unit tests.
-8. Sign CLA (see [CLA](#cla) below).
-9. Send us a pull request when you are done. We'll review your code, suggest any needed changes, and merge it in.
+### Query Records
 
-### CLA
+```bash
+sf siri data bulkv2 query \
+  --sobjecttype Account \
+  --query "SELECT Id, Name FROM Account WHERE Active__c = true" \
+  --outputfile results.csv \
+  --targetusername myorg@example.com
+```
 
-External contributors will be required to sign a Contributor's License
-Agreement. You can do so by going to https://cla.salesforce.com/sign-cla.
+### Check Job Status
 
-### Build
+```bash
+sf siri data bulkv2 status --jobid 750xx0000000044AAA --targetusername myorg@example.com
+```
 
-To build the plugin locally, make sure to have yarn installed and run the following commands:
+### Retrieve Results
+
+```bash
+sf siri data bulkv2 results \
+  --jobid 750xx0000000044AAA \
+  --type success \
+  --outputfile success_records.csv \
+  --targetusername myorg@example.com
+```
+
+## Development
+
+### Setup
 
 ```bash
 # Clone the repository
-git clone git@github.com:salesforcecli/siri
+git clone https://github.com/VenkatKoppolu/venkat-cli.git
+cd venkat-cli
 
-# Install the dependencies and compile
-yarn && yarn build
+# Install dependencies
+yarn install
+
+# Build the plugin
+yarn build
 ```
 
-To use your plugin, run using the local `./bin/dev` or `./bin/dev.cmd` file.
+### Development Workflow
 
 ```bash
-# Run using local run file.
-./bin/dev hello world
-```
+# Run commands during development
+./bin/dev data bulkv2 insert --sobjecttype Account --csvfile test.csv
 
-There should be no differences when running via the Salesforce CLI or using the local run file. However, it can be useful to link the plugin to do some additional testing or run your commands from anywhere on your machine.
-
-```bash
-# Link your plugin to the sf cli
+# Link plugin for testing across the system
 sf plugins link .
-# To verify
+
+# Verify plugin is installed
 sf plugins
 ```
 
+### Testing
+
+```bash
+# Run all tests (80+ test cases)
+yarn test
+
+# Run tests in watch mode
+yarn test -- --watch
+
+# Run linting
+yarn lint
+
+# Run linting with auto-fix
+yarn lint --fix
+
+# Build for production
+yarn prepack
+```
+
+### Project Structure
+
+```
+├── src/
+│   ├── commands/siri/data/bulkv2/    # Command implementations (7 operations)
+│   │   ├── insert.ts
+│   │   ├── update.ts
+│   │   ├── upsert.ts
+│   │   ├── delete.ts
+│   │   ├── query.ts
+│   │   ├── status.ts
+│   │   └── results.ts
+│   ├── utilities/
+│   │   ├── bulkv2.ts                 # Core Salesforce Bulk V2 API client
+│   │   └── common.ts                 # Shared utilities
+│   └── types/bulkv2.d.ts             # Type definitions
+├── test/
+│   ├── utilities/                    # Utility tests
+│   └── commands/siri/data/bulkv2/    # Command tests (80+ cases)
+├── messages/
+│   ├── hello.world.md
+│   └── siri.data.bulkv2.md           # CLI message strings
+└── README.md                          # This file
+```
+
+### Code Quality Standards
+
+This plugin maintains enterprise-grade code quality:
+
+- **Type Safety** - Full TypeScript strict mode with no `any` types in production code
+- **Error Handling** - Comprehensive try-catch-finally patterns with guaranteed resource cleanup
+- **Testing** - 80+ unit tests covering all operations and error scenarios
+- **Linting** - ESLint with Salesforce plugin rules enforced on all code
+- **Documentation** - See [ASSESSMENT_REPORT.md](ASSESSMENT_REPORT.md) for detailed improvements and [TEST_SUITE_DOCUMENTATION.md](TEST_SUITE_DOCUMENTATION.md) for test coverage
+
+### Debugging
+
+Set breakpoints in VS Code and use the included debug configuration:
+
+```bash
+# Using devhub connection
+sf siri data bulkv2 insert --sobjecttype Account --csvfile test.csv --dev-suspend
+
+# Or with local development
+NODE_OPTIONS=--inspect-brk ./bin/dev data bulkv2 insert --sobjecttype Account --csvfile test.csv
+```
+
+Then attach the VS Code debugger using the "Attach to Remote" configuration.
+
 ## Commands
 
-<!-- commands -->
+### `sf siri data bulkv2 insert`
 
-- [`sf hello world`](#sf-hello-world)
+Insert records using Bulk API v2.
 
-## `sf hello world`
-
-Say hello either to the world or someone you know.
-
-```
-USAGE
-  $ sf hello world [--json] [-n <value>]
-
-FLAGS
-  -n, --name=<value>  [default: World] The name of the person you'd like to say hello to.
-
-GLOBAL FLAGS
-  --json  Format output as json.
-
-DESCRIPTION
-  Say hello either to the world or someone you know.
-
-  Say hello either to the world or someone you know.
-
-EXAMPLES
-  Say hello to the world:
-
-    $ sf hello world
-
-  Say hello to someone you know:
-
-    $ sf hello world --name Astro
+```bash
+sf siri data bulkv2 insert \
+  --sobjecttype Account \
+  --csvfile accounts.csv \
+  --targetusername myorg@example.com
 ```
 
-<!-- commandsstop -->
+**Options:**
+- `-s, --sobjecttype=<string>` - (Required) sObject type to insert into
+- `-f, --csvfile=<string>` - (Required) Path to CSV file with data
+- `-l, --lineending=<string>` - [default: LF] Line ending (LF or CRLF)
+- `-d, --columndelimiter=<string>` - [default: COMMA] Delimiter (COMMA, PIPE, TAB, etc.)
+
+### `sf siri data bulkv2 update`
+
+Update existing records using Bulk API v2.
+
+```bash
+sf siri data bulkv2 update --sobjecttype Account --csvfile updates.csv --targetusername myorg@example.com
+```
+
+Same options as insert.
+
+### `sf siri data bulkv2 upsert`
+
+Insert or update records using an external ID field.
+
+```bash
+sf siri data bulkv2 upsert \
+  --sobjecttype Account \
+  --externalid External_ID__c \
+  --csvfile accounts.csv \
+  --targetusername myorg@example.com
+```
+
+**Additional Option:**
+- `-i, --externalid=<string>` - (Required) External ID field name
+
+### `sf siri data bulkv2 delete`
+
+Delete or hard delete records.
+
+```bash
+# Soft delete
+sf siri data bulkv2 delete --sobjecttype Account --csvfile ids.csv --targetusername myorg@example.com
+
+# Hard delete
+sf siri data bulkv2 delete --sobjecttype Account --csvfile ids.csv --hardelete --targetusername myorg@example.com
+```
+
+**Additional Option:**
+- `-h, --hardelete` - (Optional) Hard delete instead of soft delete
+
+### `sf siri data bulkv2 query`
+
+Execute SOQL queries and stream results to CSV.
+
+```bash
+sf siri data bulkv2 query \
+  --sobjecttype Account \
+  --query "SELECT Id, Name, Industry FROM Account" \
+  --outputfile results.csv \
+  --targetusername myorg@example.com
+```
+
+**Options:**
+- `-s, --sobjecttype=<string>` - (Required) sObject type for context
+- `-q, --query=<string>` - (Required) SOQL query to execute
+- `-o, --outputfile=<string>` - (Required) Output CSV file path
+
+### `sf siri data bulkv2 status`
+
+Check the status of an in-progress or completed job.
+
+```bash
+sf siri data bulkv2 status --jobid 750xx0000000044AAA --targetusername myorg@example.com
+```
+
+**Options:**
+- `-i, --jobid=<string>` - (Required) Job ID to check
+
+### `sf siri data bulkv2 results`
+
+Download results from a completed job.
+
+```bash
+sf siri data bulkv2 results \
+  --jobid 750xx0000000044AAA \
+  --type success \
+  --outputfile results.csv \
+  --targetusername myorg@example.com
+```
+
+**Options:**
+- `-i, --jobid=<string>` - (Required) Job ID
+- `-t, --type=<string>` - (Required) Result type (success, failed, unprocessed)
+- `-o, --outputfile=<string>` - (Required) Output file path
+
+## For More Help
+
+Use the `--help` flag with any command for detailed documentation:
+
+```bash
+sf siri data bulkv2 insert --help
+sf siri data bulkv2 query --help
+```
+
+## Contributing
+
+We appreciate contributions! Please follow these steps:
+
+1. Review our [Code of Conduct](CODE_OF_CONDUCT.md)
+2. Create an issue to discuss your proposed changes
+3. Fork the repository and create a feature branch
+4. Ensure all tests pass and add new tests for your changes (minimum 95% coverage)
+5. Submit a pull request with a clear description
+
+### Development Requirements
+
+- Node.js 18.0.0 or higher
+- Yarn package manager
+- Existing Salesforce CLI installation
+- Valid Salesforce organization for testing
+
+## Troubleshooting
+
+### Large File Handling
+
+Files larger than 20MB are automatically split into chunks for optimal performance. This is handled transparently by the plugin.
+
+### Authentication Errors
+
+Ensure you have authenticated with your target org:
+
+```bash
+sf org login web --alias myorg
+```
+
+### Permission Errors
+
+Hard delete operations require the "Bulk API Hard Delete" permission in your Salesforce org.
+
+## Resources
+
+- [Salesforce Bulk API v2 Documentation](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/)
+- [Salesforce CLI Documentation](https://developer.salesforce.com/docs/cli/)
+- [Plugin Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_plugins.meta/sfdx_cli_plugins/cli_plugins_architecture_sf_cli.htm)
+
+## License
+
+This project is licensed under the BSD 3-Clause License. See [LICENSE](LICENSE.txt) for details.
+
+## Support & Issues
+
+Found a bug or have a feature request? Please [create an issue](https://github.com/VenkatKoppolu/venkat-cli/issues) on GitHub.
