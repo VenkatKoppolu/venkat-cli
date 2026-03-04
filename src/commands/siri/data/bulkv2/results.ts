@@ -38,21 +38,26 @@ export default class BulkV2Results extends SfCommand<void> {
   protected static requiresUsername = true;
 
   public async run(): Promise<void> {
-     const { flags } = await this.parse(BulkV2Results);
-     this.spinner.start('Fetching Results');
-        try {
-            const org = await Org.create();
+    const { flags } = await this.parse(BulkV2Results);
+    this.spinner.start('Fetching Results');
+    try {
+      const org = await Org.create();
 
-    // Retrieve the connection
-    const connection = org.getConnection();
+      // Retrieve the connection
+      const connection = org.getConnection();
       const bulkv2 = new BulkV2(connection);
-      const result: boolean = await bulkv2.results(flags.jobid,flags.type.toUpperCase(),flags.outputfile);
-      if(result){
-        this.log(`results are written to file ${flags.outputfile}`);
+      const result: boolean = await bulkv2.results(
+        flags.jobid,
+        (flags.type as string).toUpperCase(),
+        flags.outputfile
+      );
+      if (result) {
+        this.log(`Results written to file ${flags.outputfile}`);
       }
       this.spinner.stop();
     } catch (err) {
-       throw SfError.wrap(err);
+      this.spinner.stop();
+      throw SfError.wrap(err);
     }
   }
 }

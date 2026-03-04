@@ -55,38 +55,37 @@ export default class BulkV2Delete extends SfCommand<BulkV2DeleteResult[]> {
     protected static requiresUsername = true;
 
     public async run(): Promise<BulkV2DeleteResult[]> {
-         const { flags } = await this.parse(BulkV2Delete);
+      const { flags } = await this.parse(BulkV2Delete);
 
-    // Start the spinner
-    this.spinner.start('BulkV2 Delete');
-        const responses: JobInfo[] = [];
-        try {
-            const org = await Org.create();
-            // Retrieve the connection
-            const connection = org.getConnection();
-            const bulkv2 = new BulkV2(connection);
-            const files: string[] = bulkv2.checkFileSizeAndAct(flags.csvfile);
-            /* eslint-disable no-await-in-loop */
-            for (const file of files) {
-                const input: BulkV2Input = { 
-                    sobjecttype: flags.sobjecttype, 
-                    operation: (flags.hardelete) ? 'hardDelete' : 'delete', 
-                    csvfile: file, 
-                    lineending: flags.lineending, 
-                    delimiter: flags.columndelimiter 
-                };
-                 // Perform the operation
-                 const response: JobInfo = await bulkv2.operate(input);
-                 responses.push(response);
-                 this.log(messages.getMessage('info.jobDetails', [response.id, response.id]));
-            }
-            /* eslint-disable no-await-in-loop */
-        } catch (err) {
-           throw SfError.wrap(err);
-        }finally{
-            this.spinner.stop();
-            // eslint-disable-next-line no-unsafe-finally
-            return responses;
+      // Start the spinner
+      this.spinner.start('BulkV2 Delete');
+      const responses: JobInfo[] = [];
+      try {
+        const org = await Org.create();
+        // Retrieve the connection
+        const connection = org.getConnection();
+        const bulkv2 = new BulkV2(connection);
+        const files: string[] = bulkv2.checkFileSizeAndAct(flags.csvfile);
+        
+        // eslint-disable-next-line no-await-in-loop
+        for (const file of files) {
+          const input: BulkV2Input = {
+            sobjecttype: flags.sobjecttype,
+            operation: flags.hardelete ? 'hardDelete' : 'delete',
+            csvfile: file,
+            lineending: flags.lineending,
+            delimiter: flags.columndelimiter,
+          };
+          // Perform the operation
+          const response: JobInfo = await bulkv2.operate(input);
+          responses.push(response);
+          this.log(messages.getMessage('info.jobDetails', [response.id, response.id]));
         }
+        return responses;
+      } catch (err) {
+        throw SfError.wrap(err);
+      } finally {
+        this.spinner.stop();
+      }
     }
 }

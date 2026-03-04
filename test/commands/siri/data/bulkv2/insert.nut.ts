@@ -1,28 +1,17 @@
-import { execCmd, TestSession } from '@salesforce/cli-plugins-testkit';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { exec } from 'node:child_process';
+import * as path from 'node:path';
 import { expect } from 'chai';
-import { BulkV2InsertResult } from '../../../../../src/commands/siri/data/bulkv2/insert.js';
 
-let testSession: TestSession;
+describe('NUT: siri:data:bulkv2:insert', () => {
+  it('should return success for valid insert', (done) => {
+    const csvFile = path.join(__dirname, 'fixtures', 'valid.csv');
+    const cmd = `sf siri:data:bulkv2:insert --sobjecttype Account --csvfile ${csvFile}`;
 
-describe('hello world NUTs', () => {
-  before('prepare session', async () => {
-    testSession = await TestSession.create();
-  });
-
-  after(async () => {
-    await testSession?.clean();
-  });
-
-  it('should say hello to the world', () => {
-    const result: BulkV2InsertResult = execCmd<BulkV2InsertResult>('hello world --json', { ensureExitCode: 0 })
-      .jsonOutput?.result;
-    expect(result?.Id);
-  });
-
-  it('should say hello to a given person', () => {
-    const result: BulkV2InsertResult = execCmd<BulkV2InsertResult>('hello world --name Astro --json', {
-      ensureExitCode: 0,
-    }).jsonOutput?.result;
-    expect(result?.Id);
+    exec(cmd, (error, stdout, stderr) => {
+      expect(error).to.be.null;
+      expect(stdout).to.include('UploadComplete');
+      done();
+    });
   });
 });

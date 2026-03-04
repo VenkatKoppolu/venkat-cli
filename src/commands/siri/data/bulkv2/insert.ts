@@ -53,11 +53,12 @@ export default class BulkV2Insert extends SfCommand<BulkV2InsertResult> {
     // Start the spinner
     this.spinner.start('BulkV2 Insert');
 
-    try {/// Create the Org instance
-    const org = await Org.create();
+    try {
+      // Create the Org instance
+      const org = await Org.create();
 
-    // Retrieve the connection
-    const connection = org.getConnection();
+      // Retrieve the connection
+      const connection = org.getConnection();
       // Instantiate BulkV2 utility
       const bulkv2 = new BulkV2(connection);
 
@@ -85,25 +86,8 @@ export default class BulkV2Insert extends SfCommand<BulkV2InsertResult> {
       // Stop the spinner in case of error
       this.spinner.stop();
 
-      // Handle and log the error
-      // this.log(err);
       // Rethrow the error for propagation
       throw SfError.wrap(err);
     }
   }
-  /* private handleSfError(err: unknown): void {
-        // Check if the error is an instance of SfdxError or CoreError
-        if (err instanceof SfError || err.name === 'CoreError') {
-           // const msg = getString(err, 'message') || 'Unknown error';
-            this.logError(Json.stringify(err));
-        } else {
-            // For other types of errors, handle as needed
-            this.logError('Unexpected error:'+Json.stringify(err));
-        }
-    }
-
-    private logError(message: string): void {
-        // Log error messages using this.log or other methods
-        this.log(message);
-    } */
 }
