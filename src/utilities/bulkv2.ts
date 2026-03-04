@@ -1,5 +1,6 @@
 import * as fs from 'node:fs';
 import * as util from 'node:util';
+import * as path from 'node:path';
 import { resolve } from 'node:path';
 import { Connection, Logger, Messages, SfError } from '@salesforce/core';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
@@ -102,11 +103,12 @@ export class BulkV2 {
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   public async fastFileWrite(file: string, data: NodeJS.ReadableStream): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const writeStream = fs.createWriteStream(resolve(Common.cwd, file), { flags: 'w' });
+    return new Promise((resolvePromise, reject) => {
+      const filePath = path.resolve(Common.cwd, file);
+      const writeStream = fs.createWriteStream(filePath, { flags: 'w' });
       data.pipe(writeStream);
       writeStream.on('close', () => {
-        resolve();
+        resolvePromise();
       });
       writeStream.on('error', (err) => {
         reject(new SfError(`Failed to write file: ${err.message}`, 'FileWriteError'));

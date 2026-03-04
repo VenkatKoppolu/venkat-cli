@@ -8,6 +8,7 @@ A production-grade Salesforce CLI plugin for efficient bulk data operations usin
 
 ## Features
 
+### Bulk Data Operations
 - **Bulk Insert** - Load thousands of records efficiently with automatic chunking for large CSV files
 - **Bulk Update** - Update existing records at scale
 - **Bulk Upsert** - Insert or update records using external ID lookups
@@ -16,6 +17,17 @@ A production-grade Salesforce CLI plugin for efficient bulk data operations usin
 - **Job Status Monitoring** - Track real-time progress of bulk operations
 - **Result Retrieval** - Download success, failed, or unprocessed records
 - **Smart File Handling** - Automatic splitting of large CSV files (>20MB) for optimal performance
+
+### File Export
+- **Multi-Source Export** - Export files from Attachments, ContentDocuments, Documents, or custom objects
+- **Flexible Filtering** - Use SOQL queries to select which files to export
+- **Intelligent API Selection** - Auto-detects Bulk API vs Standard API based on volume
+- **Cross-Platform** - Works on Windows, macOS, and Linux
+- **Automatic Directory Creation** - Output directory created if it doesn't exist
+- **Base64 Handling** - Automatically decodes base64-encoded file content
+- **Filename Sanitization** - Removes invalid characters and prevents directory traversal
+
+### Enterprise Quality
 - **Enterprise Error Handling** - Detailed error messages with proper resource cleanup
 - **Comprehensive Testing** - 80+ test cases with full production code coverage
 
@@ -161,6 +173,65 @@ NODE_OPTIONS=--inspect-brk ./bin/dev data bulkv2 insert --sobjecttype Account --
 Then attach the VS Code debugger using the "Attach to Remote" configuration.
 
 ## Commands
+
+### `sf siri data export files`
+
+Export files from Salesforce objects to your local machine using flexible SOQL queries.
+
+```bash
+sf siri data export files \
+  --filetype attachment \
+  --query "SELECT Id, Name, Body FROM Attachment WHERE ParentId = '001...'" \
+  --output-dir ./exports/attachments \
+  --targetusername myorg@example.com
+```
+
+**Features:**
+- Export Attachments, ContentDocuments, Documents, or custom objects
+- Filter files using SOQL queries
+- Auto-detects Bulk API vs Standard API based on file volume
+- Creates output directory automatically
+- Sanitizes filenames and handles base64-encoded content
+- Validates write permissions before export
+
+**Options:**
+- `-t, --filetype=<string>` - (Required) File type: `attachment`, `contentdocument`, `document`, `custom`
+- `-q, --query=<string>` - (Required) SOQL query to select files
+- `-o, --output-dir=<string>` - (Required) Local directory for exported files
+- `--custom-object=<string>` - (Required for custom type) Custom object name
+- `--custom-file-field=<string>` - [default: FileContent__c] File content field name
+- `--custom-name-field=<string>` - [default: Name] Filename field name
+- `--use-bulk-api` - Force Bulk API for any batch size
+- `--json` - Output results as JSON
+
+**Examples:**
+
+Export all account attachments:
+```bash
+sf siri data export files \
+  --filetype attachment \
+  --query "SELECT Id, Name, Body FROM Attachment WHERE ParentId = '001xx000003DHP'" \
+  --output-dir ./attachments
+```
+
+Export Salesforce Files (ContentDocuments):
+```bash
+sf siri data export files \
+  --filetype contentdocument \
+  --query "SELECT Id, ContentDocument.Title, VersionData FROM ContentVersion WHERE IsLatest = true" \
+  --output-dir ./files
+```
+
+Export from custom object:
+```bash
+sf siri data export files \
+  --filetype custom \
+  --custom-object DocumentStore__c \
+  --custom-file-field Document__c \
+  --custom-name-field DocumentName__c \
+  --query "SELECT Id, DocumentName__c, Document__c FROM DocumentStore__c" \
+  --output-dir ./custom-exports
+```
 
 ### `sf siri data bulkv2 insert`
 

@@ -55,13 +55,20 @@ export default class BulkV2Status extends SfCommand<BulkV2StatusResult> {
 
   private statusSummary(summary: JobInfo): JobInfo {
     this.log('');
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     for (const field of Object.keys(summary)) {
       if (field === '$') {
         delete summary[field as keyof JobInfo];
       }
     }
     this.styledHeader(messages.getMessage('info.jobStatus'));
-    this.styledObject(summary);
+    // Convert Date objects to ISO strings for display
+    const displaySummary = {
+      ...summary,
+      createdDate: summary.createdDate?.toString(),
+      systemModstamp: summary.systemModstamp?.toString(),
+    } as any;
+    this.styledObject(displaySummary);
     return summary;
   }
 }
