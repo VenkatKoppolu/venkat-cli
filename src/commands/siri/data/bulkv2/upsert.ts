@@ -52,22 +52,30 @@ export default class BulkV2Upsert extends SfCommand<BulkV2UpsertResult> {
     protected static requiresUsername = true;
 
     public async run(): Promise<BulkV2UpsertResult> {
-         const { flags } = await this.parse(BulkV2Upsert);
-        this.spinner.start('BulkV2 Upsert');
-        try {
-             const org = await Org.create();
+      const { flags } = await this.parse(BulkV2Upsert);
+      this.spinner.start('BulkV2 Upsert');
+      try {
+        const org = await Org.create();
 
-    // Retrieve the connection
-    const connection = org.getConnection();
-      // Instantiate BulkV2 utility
-      const bulkv2 = new BulkV2(connection);
-            const input: BulkV2Input = { sobjecttype: flags.sobjecttype, externalid: flags.externalid, operation: 'upsert', csvfile: flags.csvfile, lineending: flags.lineending, delimiter: flags.columndelimiter };
-            const response: JobInfo = await bulkv2.operate(input);
-            this.log(messages.getMessage('info.jobDetails', [response.id, response.id]));
-            this.spinner.stop();
-            return response;
-        } catch (err) {
-            throw SfError.wrap(err);
-        }
+        // Retrieve the connection
+        const connection = org.getConnection();
+        // Instantiate BulkV2 utility
+        const bulkv2 = new BulkV2(connection);
+        const input: BulkV2Input = {
+          sobjecttype: flags.sobjecttype,
+          externalid: flags.externalid,
+          operation: 'upsert',
+          csvfile: flags.csvfile,
+          lineending: flags.lineending,
+          delimiter: flags.columndelimiter,
+        };
+        const response: JobInfo = await bulkv2.operate(input);
+        this.log(messages.getMessage('info.jobDetails', [response.id, response.id]));
+        this.spinner.stop();
+        return response;
+      } catch (err) {
+        this.spinner.stop();
+        throw SfError.wrap(err);
+      }
     }
 }

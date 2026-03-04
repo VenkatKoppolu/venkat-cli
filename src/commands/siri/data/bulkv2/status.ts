@@ -41,7 +41,10 @@ export default class BulkV2Status extends SfCommand<BulkV2StatusResult> {
     // Retrieve the connection
     const connection = org.getConnection();
       const bulkv2 = new BulkV2(connection);
-      const jobsummary: JobInfo = await bulkv2.status(flags.jobid,flags.type?.toUpperCase());
+      const jobsummary: JobInfo = await bulkv2.status(
+        flags.jobid,
+        (flags.type as string).toUpperCase()
+      );
       this.statusSummary(jobsummary);
       this.spinner.stop();
       return jobsummary;
@@ -52,39 +55,13 @@ export default class BulkV2Status extends SfCommand<BulkV2StatusResult> {
 
   private statusSummary(summary: JobInfo): JobInfo {
     this.log('');
-    const formatOutput: string[] = [];
-    for (const field in summary) {
-      if (Object.prototype.hasOwnProperty.call(summary, field)) {
-        formatOutput.push(field);
+    for (const field of Object.keys(summary)) {
+      if (field === '$') {
+        delete summary[field as keyof JobInfo];
       }
-    }
-    formatOutput.splice(0, 1);
-    if ('$' in summary) {
-    delete summary['$'];
     }
     this.styledHeader(messages.getMessage('info.jobStatus'));
-
-    this.styledObject([JSON.stringify(summary), formatOutput]);
-
+    this.styledObject(summary);
     return summary;
-
-    /* if (results) {
-      const errorMessages: string[] = [];
-      results.forEach((result: BatchResultInfo): void => {
-        if (result.errors) {
-          result.errors.forEach((errMsg) => {
-            errorMessages.push(errMsg);
-          });
-        }
-      });
-      if (errorMessages.length > 0) {
-        this.ux.styledHeader(messages.getMessage('BulkError'));
-        errorMessages.forEach((errorMessage) => {
-          this.ux.log(errorMessage);
-        });
-      }
-    } */
-
-
   }
 }

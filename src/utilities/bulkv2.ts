@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import * as fs from 'node:fs';
 import * as util from 'node:util';
 import { resolve } from 'node:path';
@@ -91,8 +88,7 @@ export class BulkV2 {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async moreResults(endpoint: string, locator: string, file: string): Promise<any> {
+  public async moreResults(endpoint: string, locator: string, file: string): Promise<AxiosResponse> {
     try {
       const config: AxiosRequestConfig = this.generateConfig('text/csv');
       config.responseType = 'stream';
@@ -100,86 +96,99 @@ export class BulkV2 {
       await this.fastFileWrite(file, response.data).then().catch();
       return response;
     } catch (err) {
-      return err;
+      throw new SfError(`Failed to fetch more results: ${err instanceof Error ? err.message : 'Unknown error'}`, 'FetchResultsError');
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-explicit-any
-  public async fastFileWrite(file: string, data: any): Promise<void> {
-    const writeStream = fs.createWriteStream(resolve(Common.cwd, file), { flags: 'w' });
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    await data.pipe(writeStream);
-    writeStream.on('close', () => {
-      // console.log(file + 'write complete.');
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  public async fastFileWrite(file: string, data: NodeJS.ReadableStream): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const writeStream = fs.createWriteStream(resolve(Common.cwd, file), { flags: 'w' });
+      data.pipe(writeStream);
+      writeStream.on('close', () => {
+        resolve();
+      });
+      writeStream.on('error', (err) => {
+        reject(new SfError(`Failed to write file: ${err.message}`, 'FileWriteError'));
+      });
     });
   }
   // eslint-disable-next-line class-methods-use-this
   public generateRequestBody(input: BulkV2Input): string {
-    return JSON.stringify(
-      input.operation === 'upsert'
-        ? {
-            object: input.sobjecttype,
-            externalIdFieldName: input.externalid,
-            operation: input.operation,
-            lineEnding: input.lineending,
-            columnDelimiter: input.delimiter,
-          }
-        : input.operation === 'query'
-        ? {
-            operation: 'query',
-            query: input.query,
-            contentType: 'CSV',
-            columnDelimiter: input.delimiter,
-            lineEnding: input.lineending,
-          }
-        : {
-            object: input.sobjecttype,
-            operation: input.operation,
-            lineEnding: input.lineending,
-            columnDelimiter: input.delimiter,
-          }
-    );
+    let requestBody: Record<string, string>;
+    
+    if (input.operation === 'upsert') {
+      requestBody = {
+        object: input.sobjecttype,
+        externalIdFieldName: input.externalid ?? '',
+        operation: input.operation,
+        lineEnding: input.lineending ?? 'LF',
+        columnDelimiter: input.delimiter ?? 'COMMA',
+      };
+    } else if (input.operation === 'query') {
+      requestBody = {
+        operation: 'query',
+        query: input.query ?? '',
+        contentType: 'CSV',
+        columnDelimiter: input.delimiter ?? 'COMMA',
+        lineEnding: input.lineending ?? 'LF',
+      };
+    } else {
+      requestBody = {
+        object: input.sobjecttype,
+        operation: input.operation,
+        lineEnding: input.lineending ?? 'LF',
+        columnDelimiter: input.delimiter ?? 'COMMA',
+      };
+    }
+    
+    return JSON.stringify(requestBody);
   }
 
   public async results(jobid: string, type: string, file: string): Promise<boolean> {
     this.query = type.includes('QUERY');
     const job: JobInfo = await this.status(jobid, this.query ? 'QUERY_STATUS' : '');
     if (!(job.state === 'JobComplete' || job.state === 'Failed')) {
-      messages.getMessage('info.jobStatusInfo', [job.id, job.state]);
+      logger.info(messages.getMessage('info.jobStatusInfo', [job.id, job.state]));
       return false;
     }
 
     const endpoint: string = this.generateEndpoint(type, jobid);
     const config: AxiosRequestConfig = this.generateConfig('application/json');
     config.responseType = 'stream';
-    // eslint-disable-next-line no-async-promise-executor, @typescript-eslint/no-misused-promises
-    return axios.get(endpoint, config).then(
-      (response) =>
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises, no-async-promise-executor
-        new Promise(async (resolved, rejected) => {
-          try {
-            await this.fastFileWrite(file, response.data).then().catch();
-            let locator: string = response.headers['sforce-locator'];
-            const filename = file.substring(0, file.length - 4);
-            let i = 0;
-            while (locator !== '') {
-              i++;
-              // eslint-disable-next-line no-param-reassign
-              file = filename + i + '.csv';
-              // eslint-disable-next-line no-await-in-loop
-              const res = await this.moreResults(endpoint, locator, file);
-              if ('headers' in res && 'sforce-locator' in res.headers) {
-                locator = res.headers['sforce-locator'];
-              } else {
-                locator = '';
-              }
-            }
-            resolved(true);
-          } catch (err) {
-            rejected(err);
-          }
-        })
-    );
+
+    return new Promise<boolean>((resolve, reject) => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      axios.get(endpoint, config).then(
+        (response: AxiosResponse) => {
+          this.processResultsRecursive(file, response, endpoint)
+            .then((success) => resolve(success))
+            .catch((err) => reject(err));
+        },
+        (err) => {
+          reject(new SfError(`Failed to fetch results: ${err instanceof Error ? err.message : 'Unknown error'}`, 'FetchError'));
+        }
+      );
+    });
+  }
+
+  private async processResultsRecursive(file: string, response: AxiosResponse, endpoint: string): Promise<boolean> {
+    try {
+      await this.fastFileWrite(file, response.data);
+      let locator: string = response.headers['sforce-locator'] as string;
+      const filename = file.substring(0, file.length - 4);
+      let i = 0;
+
+      while (locator !== '') {
+        i++;
+        const nextFile = filename + i + '.csv';
+        const res = await this.moreResults(endpoint, locator, nextFile);
+        locator = (res.headers['sforce-locator'] as string) || '';
+      }
+      return true;
+    } catch (err) {
+      throw new SfError(`Error processing results: ${err instanceof Error ? err.message : 'Unknown error'}`, 'ResultsError');
+    }
   }
 
   public async status(jobid: string, type: string): Promise<JobInfo> {
@@ -188,8 +197,10 @@ export class BulkV2 {
     const config: AxiosRequestConfig = this.generateConfig('application/json');
     const response: AxiosResponse = await axios.get(endpoint, config);
     if (response?.status !== 200) {
-      response.data.errorMessage = response?.statusText + response.data.errorMessage;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      response.data.errorMessage = (response?.statusText ?? '') + (response.data.errorMessage ?? '');
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return response.data;
   }
 
@@ -198,8 +209,10 @@ export class BulkV2 {
     const config: AxiosRequestConfig = this.generateConfig('application/json');
     const endpoint: string = this.generateEndpoint('STATUS', job.id);
     const response: AxiosResponse = await axios.patch(endpoint, data, config);
+    // eslint-disable-next-line no-param-reassign
     job = response.data;
     if (response.status !== 200) {
+      // eslint-disable-next-line no-param-reassign
       job.errorMessage = response.statusText;
     }
     return job;
@@ -213,10 +226,10 @@ export class BulkV2 {
     return response.data;
   }
 
-  private async uploadJob(job: JobInfo, file: string|undefined): Promise<JobInfo> {
+  private async uploadJob(job: JobInfo, file: string | undefined): Promise<JobInfo> {
     if (file === undefined) {
-  throw new SfError('No file available', 'NoFileError');
-}
+      throw new SfError('No file available', 'NoFileError');
+    }
     const data: string = fs.readFileSync(resolve(Common.cwd, file), { encoding: 'utf8' }).toString();
     const config: AxiosRequestConfig = this.generateConfig('text/csv');
     const endpoint: string = this.generateEndpoint('UPLOAD', job.id);
@@ -229,6 +242,10 @@ export class BulkV2 {
   }
 
   private generateConfig(contentType: string): AxiosRequestConfig {
+    if (!this.conn.accessToken) {
+      throw new SfError('No access token available', 'NoAccessToken');
+    }
+    
     const config: AxiosRequestConfig = {
       headers: {
         'Content-Type': contentType,
@@ -241,41 +258,57 @@ export class BulkV2 {
   }
 
   private generateEndpoint(operation: string, jobid: string = ''): string {
-    let endpoint: string = '';
-    const job = [this.conn.instanceUrl, this.conn.getApiVersion(), jobid];
+    const instanceUrl = this.conn.instanceUrl;
+    const apiVersion = this.conn.getApiVersion();
+    
+    if (!instanceUrl) {
+      throw new SfError('No instance URL available', 'NoInstanceUrl');
+    }
+
+    const baseParams = [instanceUrl, apiVersion, jobid];
+    let endpoint: string;
+
     switch (operation) {
       case 'QUERY':
-        endpoint = util.format.apply(util, [ENDPOINT.QUERY, ...job]).trim();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        endpoint = util.format(ENDPOINT.QUERY as any, ...baseParams).trim();
         break;
       case 'QUERY_STATUS':
-        endpoint = util.format.apply(util, [ENDPOINT.QUERY_STATUS, ...job]).trim();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        endpoint = util.format(ENDPOINT.QUERY_STATUS as any, ...baseParams).trim();
         break;
       case 'QUERY_RESULT':
-        endpoint = util.format.apply(util, [ENDPOINT.QUERY_RESULT, ...job]).trim();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        endpoint = util.format(ENDPOINT.QUERY_RESULT as any, ...baseParams).trim();
         break;
       case 'CREATE':
-        endpoint = util.format.apply(util, [ENDPOINT.CREATE, ...job]).trim();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        endpoint = util.format(ENDPOINT.CREATE as any, ...baseParams).trim();
         break;
       case 'UPLOAD':
-        endpoint = util.format.apply(util, [ENDPOINT.UPLOAD, ...job]).trim();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        endpoint = util.format(ENDPOINT.UPLOAD as any, ...baseParams).trim();
         break;
       case 'STATUS':
-        endpoint = util.format.apply(util, [ENDPOINT.STATUS, ...job]).trim();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        endpoint = util.format(ENDPOINT.STATUS as any, ...baseParams).trim();
         break;
       case 'SUCCESS':
-        endpoint = util.format.apply(util, [ENDPOINT.SUCCESS, ...job]).trim();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        endpoint = util.format(ENDPOINT.SUCCESS as any, ...baseParams).trim();
         break;
       case 'FAILED':
-        endpoint = util.format.apply(util, [ENDPOINT.FAILED, ...job]).trim();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        endpoint = util.format(ENDPOINT.FAILED as any, ...baseParams).trim();
         break;
       case 'UNPROCESSED':
-        endpoint = util.format.apply(util, [ENDPOINT.UNPROCESSED, ...job]).trim();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        endpoint = util.format(ENDPOINT.UNPROCESSED as any, ...baseParams).trim();
         break;
-
       default:
-        endpoint = '';
-        break;
+        throw new SfError(`Unknown operation: ${operation}`, 'UnknownOperation');
     }
+
     return endpoint;
   }
   
