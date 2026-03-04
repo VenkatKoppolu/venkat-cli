@@ -1,6 +1,6 @@
 {
   "name": "siri",
-  "description": "cli plugin named after my daughter.",
+  "description": "Salesforce CLI extension for managing data operations including bulk uploads, queries, updates, deletes, and file exports.",
   "version": "1.0.0",
   "dependencies": {
     "@oclif/core": "^4",
@@ -45,7 +45,7 @@
     ],
     "topics": {
       "siri": {
-        "description": "Commands to say hello to siri."
+        "description": "Manage Siri data operations including bulk uploads, queries, and exports."
       }
     },
     "flexibleTaxonomy": true

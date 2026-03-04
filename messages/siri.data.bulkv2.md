@@ -1,20 +1,20 @@
 # summary
 
-Say hello.
+Perform bulk data operations using Salesforce Bulk API v2.
 
 # description
 
-Say hello either to the world or someone you know.
+Execute high-performance bulk data operations including insert, update, upsert, delete, and query operations on large datasets with progress tracking and comprehensive error handling.
 
 # examples
 
-- Say hello to the world:
+- Insert records into Account object:
 
-  <%= config.bin %> <%= command.id %>
+  <%= config.bin %> <%= command.id %> insert --sobjecttype Account --csvfile accounts.csv
 
-- Say hello to someone you know:
+- Check the status of a bulk job:
 
-  <%= config.bin %> <%= command.id %> --name Astro
+  <%= config.bin %> <%= command.id %> status --jobid 750xx0000000044AAA
 
 # info.jobDetails
 Check job %s status with the command
@@ -30,11 +30,11 @@ Job %s is still in %s state.
 
 # status.summary
 
-get the status of the BulkV2 job.
+Track the status of a Bulk API v2 job.
 
 # status.description
 
-get the status of the BulkV2 job.
+Retrieve real-time progress and status information for a bulk job execution.
 
 # status.examples
 
@@ -42,11 +42,11 @@ sf  siri data bulkv2 status -i 7505r0000xxxxxxxxx(jobid)
 
 # insert.summary
 
-Inserts records into the org using BulkV2 API.
+Insert records into the org using Bulk API v2.
 
 # insert.description
 
-Inserts records into the org using BulkV2 API.
+Load thousands of records efficiently into Salesforce using the Bulk API v2 with automatic chunking for large CSV files.
 
 # insert.examples
 
@@ -55,11 +55,11 @@ sf siri data bulkv2 insert -s Account -f '/csv/file/path/csvfile.csv'
 
 # update.summary
 
-Updates records into the org using BulkV2 API.
+Update records in the org using Bulk API v2.
 
 # update.description
 
-Updates records into the org using BulkV2 API.
+Updates existing records in bulk using the Salesforce Bulk API v2 with progress tracking.
 
 # update.examples
 
@@ -68,11 +68,11 @@ sf siri data bulkv2 update -s Account -f '/csv/file/path/csvfile.csv'
 
 # upsert.summary
 
-Upsert records from csv file to salesforce using BulkV2 API.
+Insert or update records using Bulk API v2 with external ID.
 
 # upsert.description
 
-Upsert records from csv file to salesforce using BulkV2 API.
+Insert or update records in bulk using the Salesforce Bulk API v2 with external ID lookups for matching.
 
 # upsert.examples
 
@@ -80,11 +80,11 @@ sf siri data bulkv2 upsert -s Account -i externalId__c -f '/csv/file/path/csvfil
 
 # query.summary
 
-Executes the query against the data in your default (scratch) org using BulkV2 API.
+Execute SOQL queries at scale using Bulk API v2.
 
 # query.description
 
-Executes the query against the data in your default (scratch) org using BulkV2 API.
+Execute SOQL queries against large datasets with streaming results to CSV using the Salesforce Bulk API v2.
 
 # query.examples
 
@@ -92,11 +92,11 @@ sf siri data bulkv2 query -s Account -q \"SELECT Id FROM ACCOUNT\" -f '/csv/file
 
 # results.summary
 
-fetch the results for a specific BulkV2 job after execution is completed.
+Download results from a completed Bulk API v2 job.
 
 # results.description
 
-fetch the results for a specific BulkV2 job after execution is completed.
+Fetch and export success, failed, or unprocessed records from a completed bulk job.
 
 # results.examples
 
@@ -109,11 +109,11 @@ Technical error occurred while fetching the results. \n %s
 
 # delete.summary
 
-Delete or hard delete the records using BulkV2 API.
+Delete or hard delete records using Bulk API v2.
 
 # delete.description
 
-Delete or hard delete the records using BulkV2 API.
+Remove records at scale using the Salesforce Bulk API v2 with support for soft delete (Recycle Bin) or hard delete.
 
 # delete.examples
 
