@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import * as util from 'node:util';
-import { resolve } from 'node:path';
+import path, { resolve as pathResolve } from 'node:path';
 import { Connection, Logger, Messages, SfError } from '@salesforce/core';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { BulkV2Input, JobInfo } from '../types/bulkv2.js';
@@ -35,6 +35,51 @@ export class BulkV2 {
     this.conn = conn;
   }
 
+  public static async fastFileWrite(file: string, data: NodeJS.ReadableStream): Promise<void> {
+    return new Promise((resolvePromise, reject) => {
+      const filePath = path.resolve(Common.cwd, file);
+      const writeStream = fs.createWriteStream(filePath, { flags: 'w' });
+      data.pipe(writeStream);
+      writeStream.on('close', () => {
+        resolvePromise();
+      });
+      writeStream.on('error', (err) => {
+        reject(new SfError(`Failed to write file: ${err.message}`, 'FileWriteError'));
+      });
+    });
+  }
+
+  public static generateRequestBody(input: BulkV2Input): string {
+    let requestBody: Record<string, string>;
+
+    if (input.operation === 'upsert') {
+      requestBody = {
+        object: input.sobjecttype,
+        externalIdFieldName: input.externalid ?? '',
+        operation: input.operation,
+        lineEnding: input.lineending ?? 'LF',
+        columnDelimiter: input.delimiter ?? 'COMMA',
+      };
+    } else if (input.operation === 'query') {
+      requestBody = {
+        operation: 'query',
+        query: input.query ?? '',
+        contentType: 'CSV',
+        columnDelimiter: input.delimiter ?? 'COMMA',
+        lineEnding: input.lineending ?? 'LF',
+      };
+    } else {
+      requestBody = {
+        object: input.sobjecttype,
+        operation: input.operation,
+        lineEnding: input.lineending ?? 'LF',
+        columnDelimiter: input.delimiter ?? 'COMMA',
+      };
+    }
+
+    return JSON.stringify(requestBody);
+  }
+
   public checkFileSizeAndAct(filename: string): string[] {
     const files: string[] = [];
     const size = this.getFilesizeInMegaBytes(filename);
@@ -44,25 +89,23 @@ export class BulkV2 {
     }
 
     const numberOfTempFiles = Math.ceil(size / 20);
-    const linesArray = fs.readFileSync(resolve(process.cwd(), filename), { encoding: 'utf8' }).toString().split('\n');
+    const linesArray = fs
+      .readFileSync(pathResolve(process.cwd(), filename), { encoding: 'utf8' })
+      .toString()
+      .split('\n');
     const numberOfLinesInSingleFile = Math.ceil(linesArray.length / numberOfTempFiles);
-    
+
     const result: string[][] = linesArray.reduce((resultArray: string[][], item: string, index: number) => {
       const chunkIndex = Math.floor(index / numberOfLinesInSingleFile);
 
-      if (!resultArray[chunkIndex]) {
-        resultArray[chunkIndex] = []; // start a new chunk
-      }
-
-      resultArray[chunkIndex].push(item);
-
-      return resultArray;
+      const chunk = resultArray[chunkIndex] ? [...resultArray[chunkIndex], item] : [item];
+      return Object.assign([], resultArray, { [chunkIndex]: chunk });
     }, []);
 
     for (let i = 0; i < result.length; i++) {
       const tempFilename = `temp${i}.csv`;
       files.push(tempFilename);
-      fs.writeFileSync(tempFilename, ((i === 0) ? '' : '"Id"\n') + result[i].join('\n'), { encoding: 'utf8' });
+      fs.writeFileSync(tempFilename, (i === 0 ? '' : '"Id"\n') + result[i].join('\n'), { encoding: 'utf8' });
     }
 
     return files;
@@ -88,61 +131,26 @@ export class BulkV2 {
     }
   }
 
-  public async moreResults(endpoint: string, locator: string, file: string): Promise<AxiosResponse> {
+  public async moreResults(
+    endpoint: string,
+    locator: string,
+    file: string
+  ): Promise<AxiosResponse<NodeJS.ReadableStream>> {
     try {
       const config: AxiosRequestConfig = this.generateConfig('text/csv');
       config.responseType = 'stream';
-      const response = await axios.get(endpoint + '?locator=' + locator, config);
-      await this.fastFileWrite(file, response.data).then().catch();
+      const response = await axios.get<NodeJS.ReadableStream>(endpoint + '?locator=' + locator, {
+        ...config,
+        responseType: 'stream',
+      });
+      await BulkV2.fastFileWrite(file, response.data);
       return response;
     } catch (err) {
-      throw new SfError(`Failed to fetch more results: ${err instanceof Error ? err.message : 'Unknown error'}`, 'FetchResultsError');
+      throw new SfError(
+        `Failed to fetch more results: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        'FetchResultsError'
+      );
     }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-shadow
-  public async fastFileWrite(file: string, data: NodeJS.ReadableStream): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const writeStream = fs.createWriteStream(resolve(Common.cwd, file), { flags: 'w' });
-      data.pipe(writeStream);
-      writeStream.on('close', () => {
-        resolve();
-      });
-      writeStream.on('error', (err) => {
-        reject(new SfError(`Failed to write file: ${err.message}`, 'FileWriteError'));
-      });
-    });
-  }
-  // eslint-disable-next-line class-methods-use-this
-  public generateRequestBody(input: BulkV2Input): string {
-    let requestBody: Record<string, string>;
-    
-    if (input.operation === 'upsert') {
-      requestBody = {
-        object: input.sobjecttype,
-        externalIdFieldName: input.externalid ?? '',
-        operation: input.operation,
-        lineEnding: input.lineending ?? 'LF',
-        columnDelimiter: input.delimiter ?? 'COMMA',
-      };
-    } else if (input.operation === 'query') {
-      requestBody = {
-        operation: 'query',
-        query: input.query ?? '',
-        contentType: 'CSV',
-        columnDelimiter: input.delimiter ?? 'COMMA',
-        lineEnding: input.lineending ?? 'LF',
-      };
-    } else {
-      requestBody = {
-        object: input.sobjecttype,
-        operation: input.operation,
-        lineEnding: input.lineending ?? 'LF',
-        columnDelimiter: input.delimiter ?? 'COMMA',
-      };
-    }
-    
-    return JSON.stringify(requestBody);
   }
 
   public async results(jobid: string, type: string, file: string): Promise<boolean> {
@@ -159,22 +167,42 @@ export class BulkV2 {
 
     return new Promise<boolean>((resolve, reject) => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      axios.get(endpoint, config).then(
-        (response: AxiosResponse) => {
+      axios.get<NodeJS.ReadableStream>(endpoint, config).then(
+        (response: AxiosResponse<NodeJS.ReadableStream>) => {
           this.processResultsRecursive(file, response, endpoint)
             .then((success) => resolve(success))
             .catch((err) => reject(err));
         },
         (err) => {
-          reject(new SfError(`Failed to fetch results: ${err instanceof Error ? err.message : 'Unknown error'}`, 'FetchError'));
+          reject(
+            new SfError(
+              `Failed to fetch results: ${err instanceof Error ? err.message : 'Unknown error'}`,
+              'FetchError'
+            )
+          );
         }
       );
     });
   }
 
-  private async processResultsRecursive(file: string, response: AxiosResponse, endpoint: string): Promise<boolean> {
+  public async status(jobid: string, type: string): Promise<JobInfo> {
+    this.query = type.includes('QUERY');
+    const endpoint: string = this.generateEndpoint(this.query ? 'QUERY_STATUS' : 'STATUS', jobid);
+    const config: AxiosRequestConfig = this.generateConfig('application/json');
+    const response: AxiosResponse<JobInfo> = await axios.get<JobInfo>(endpoint, config);
+    if (response?.status !== 200) {
+      response.data.errorMessage = (response?.statusText ?? '') + (response.data.errorMessage ?? '');
+    }
+    return response.data;
+  }
+
+  private async processResultsRecursive(
+    file: string,
+    response: AxiosResponse<NodeJS.ReadableStream>,
+    endpoint: string
+  ): Promise<boolean> {
     try {
-      await this.fastFileWrite(file, response.data);
+      await BulkV2.fastFileWrite(file, response.data);
       let locator: string = response.headers['sforce-locator'] as string;
       const filename = file.substring(0, file.length - 4);
       let i = 0;
@@ -182,47 +210,36 @@ export class BulkV2 {
       while (locator !== '') {
         i++;
         const nextFile = filename + i + '.csv';
+        // eslint-disable-next-line no-await-in-loop
         const res = await this.moreResults(endpoint, locator, nextFile);
         locator = (res.headers['sforce-locator'] as string) || '';
       }
       return true;
     } catch (err) {
-      throw new SfError(`Error processing results: ${err instanceof Error ? err.message : 'Unknown error'}`, 'ResultsError');
+      throw new SfError(
+        `Error processing results: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        'ResultsError'
+      );
     }
-  }
-
-  public async status(jobid: string, type: string): Promise<JobInfo> {
-    this.query = type.includes('QUERY');
-    const endpoint: string = this.generateEndpoint(this.query ? 'QUERY_STATUS' : 'STATUS', jobid);
-    const config: AxiosRequestConfig = this.generateConfig('application/json');
-    const response: AxiosResponse = await axios.get(endpoint, config);
-    if (response?.status !== 200) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      response.data.errorMessage = (response?.statusText ?? '') + (response.data.errorMessage ?? '');
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return response.data;
   }
 
   private async patchJob(job: JobInfo): Promise<JobInfo> {
     const data: string = JSON.stringify({ state: 'UploadComplete' });
     const config: AxiosRequestConfig = this.generateConfig('application/json');
     const endpoint: string = this.generateEndpoint('STATUS', job.id);
-    const response: AxiosResponse = await axios.patch(endpoint, data, config);
-    // eslint-disable-next-line no-param-reassign
-    job = response.data;
+    const response: AxiosResponse<JobInfo> = await axios.patch<JobInfo>(endpoint, data, config);
+    const updatedJob: JobInfo = response.data;
     if (response.status !== 200) {
-      // eslint-disable-next-line no-param-reassign
-      job.errorMessage = response.statusText;
+      updatedJob.errorMessage = response.statusText;
     }
-    return job;
+    return updatedJob;
   }
 
   private async createJob(input: BulkV2Input): Promise<JobInfo> {
-    const data: string = this.generateRequestBody(input);
+    const data: string = BulkV2.generateRequestBody(input);
     const config: AxiosRequestConfig = this.generateConfig('application/json');
     const endpoint: string = this.generateEndpoint(this.query ? 'QUERY' : 'CREATE');
-    const response: AxiosResponse = await axios.post(endpoint, data, config);
+    const response: AxiosResponse<JobInfo> = await axios.post(endpoint, data, config);
     return response.data;
   }
 
@@ -230,22 +247,23 @@ export class BulkV2 {
     if (file === undefined) {
       throw new SfError('No file available', 'NoFileError');
     }
-    const data: string = fs.readFileSync(resolve(Common.cwd, file), { encoding: 'utf8' }).toString();
+    const data: string = fs.readFileSync(path.resolve(Common.cwd, file), { encoding: 'utf8' }).toString();
     const config: AxiosRequestConfig = this.generateConfig('text/csv');
     const endpoint: string = this.generateEndpoint('UPLOAD', job.id);
     const response: AxiosResponse = await axios.put(endpoint, data, config);
+    const updatedJob: JobInfo = { ...job };
 
     if (response.status !== 201) {
-      job.errorMessage = response.statusText;
+      updatedJob.errorMessage = response.statusText;
     }
-    return job;
+    return updatedJob;
   }
 
   private generateConfig(contentType: string): AxiosRequestConfig {
     if (!this.conn.accessToken) {
       throw new SfError('No access token available', 'NoAccessToken');
     }
-    
+
     const config: AxiosRequestConfig = {
       headers: {
         'Content-Type': contentType,
@@ -260,7 +278,7 @@ export class BulkV2 {
   private generateEndpoint(operation: string, jobid: string = ''): string {
     const instanceUrl = this.conn.instanceUrl;
     const apiVersion = this.conn.getApiVersion();
-    
+
     if (!instanceUrl) {
       throw new SfError('No instance URL available', 'NoInstanceUrl');
     }
@@ -311,11 +329,11 @@ export class BulkV2 {
 
     return endpoint;
   }
-  
+
   // eslint-disable-next-line class-methods-use-this
   private getFilesizeInMegaBytes(filename: string): number {
     const stats = fs.statSync(filename);
     const fileSizeInBytes = stats.size;
     return fileSizeInBytes / (1024 * 1024);
-  } 
+  }
 }

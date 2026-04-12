@@ -123,10 +123,8 @@ describe('BulkV2 Utility', () => {
     it('should split large files into multiple chunks', () => {
       // 40MB file
       fsStub.returns({ size: 40 * 1024 * 1024 } as fs.Stats);
-      const largeContent = Array(100)
-        .fill('Id,Name\n123,Test')
-        .join('\n');
-      sinon.stub(fs, 'readFileSync').returns(largeContent as any);
+      const largeContent = Array(100).fill('Id,Name\n123,Test').join('\n');
+      sinon.stub(fs, 'readFileSync').returns(largeContent);
       sinon.stub(fs, 'writeFileSync');
 
       const result = bulkv2.checkFileSizeAndAct('test.csv');
@@ -156,7 +154,7 @@ describe('BulkV2 Utility', () => {
 
   describe('error handling', () => {
     it('should throw error in moreResults when request fails', async () => {
-      sinon.stub(require('axios') as any, 'get').rejects(new Error('Network error'));
+      sinon.stub(require('axios'), 'get').rejects(new Error('Network error'));
 
       try {
         await (bulkv2 as any).moreResults('http://test.com', 'locator', 'output.csv');
