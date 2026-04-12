@@ -48,7 +48,7 @@
         "description": "Siri Manage data operations including bulk uploads, queries, and exports."
       }
     },
-    "flexibleTaxonomy": true
+    "flexibleTaxonomy": false
   },
   "scripts": {
     "build": "wireit",
