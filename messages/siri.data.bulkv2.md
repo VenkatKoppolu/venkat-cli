@@ -120,6 +120,10 @@ Remove records at scale using the Salesforce Bulk API v2 with support for soft d
 sf siri data bulkv2 delete -s Account -f /csv/file/path/csvfile.csv
 sf siri data bulkv2 delete -s Account --hardelete -f /csv/file/path/csvfile.csv
 
+# flags.targetorg.summary
+
+The target org for the command
+
 # flags.csvfile.summary
 
 (required) the path to the CSV file that defines the records to upsert

@@ -9,12 +9,16 @@ Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 // Load the specific messages for this file.
 const messages = Messages.loadMessages('siri', 'siri.data.bulkv2');
 export type BulkV2StatusResult = JobInfo;
+type DisplaySummary = Omit<JobInfo, 'createdDate' | 'systemModstamp'> & {
+  createdDate?: string;
+  systemModstamp?: string;
+};
 
 export default class BulkV2Status extends SfCommand<BulkV2StatusResult> {
- public static readonly summary = messages.getMessage('status.summary');
+  public static readonly summary = messages.getMessage('status.summary');
   public static readonly description = messages.getMessage('status.description');
   public static readonly examples = messages.getMessages('status.examples');
- public static readonly flags = {
+  public static readonly flags = {
     jobid: Flags.string({
       char: 'i',
       summary: messages.getMessage('flags.jobid.summary'),
@@ -29,7 +33,7 @@ export default class BulkV2Status extends SfCommand<BulkV2StatusResult> {
       default: 'LF',
     }),
   };
-  
+
   protected static requiresUsername = true;
 
   public async run(): Promise<BulkV2StatusResult> {
@@ -38,18 +42,15 @@ export default class BulkV2Status extends SfCommand<BulkV2StatusResult> {
     try {
       const org = await Org.create();
 
-    // Retrieve the connection
-    const connection = org.getConnection();
+      // Retrieve the connection
+      const connection = org.getConnection();
       const bulkv2 = new BulkV2(connection);
-      const jobsummary: JobInfo = await bulkv2.status(
-        flags.jobid,
-        (flags.type as string).toUpperCase()
-      );
+      const jobsummary: JobInfo = await bulkv2.status(flags.jobid, flags.type.toUpperCase());
       this.statusSummary(jobsummary);
       this.spinner.stop();
       return jobsummary;
     } catch (err) {
-       throw SfError.wrap(err);
+      throw SfError.wrap(err);
     }
   }
 
@@ -63,11 +64,12 @@ export default class BulkV2Status extends SfCommand<BulkV2StatusResult> {
     }
     this.styledHeader(messages.getMessage('info.jobStatus'));
     // Convert Date objects to ISO strings for display
-    const displaySummary = {
+
+    const displaySummary: DisplaySummary = {
       ...summary,
       createdDate: summary.createdDate?.toString(),
       systemModstamp: summary.systemModstamp?.toString(),
-    } as any;
+    };
     this.styledObject(displaySummary);
     return summary;
   }
