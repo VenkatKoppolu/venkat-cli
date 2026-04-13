@@ -220,10 +220,17 @@ CRLF—carriage return character followed by a linefeed character
 
 # flags.type.summary
 
-(required) specify one of success, failed and unprocessed values to get respective results from the job.
+(required) specify one of success, failed and unprocessed values to get respective results from the job. The default is success. 
 
 # flags.type.description
 
-(required) specify one of success, failed and unprocessed values to get respective results from the job.
+(required) specify one of success, failed and unprocessed values to get respective results from the job. The default is success. 
 
 
+# flags.statustype.summary
+
+(optional) specify one of STATUS, QUERY values to get respective status of the job. The default is STATUS. 
+
+# flags.statustype.description
+
+(optional) specify one of STATUS, QUERY values to get respective status of the job. The default is STATUS. 
