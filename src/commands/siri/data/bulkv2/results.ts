@@ -25,7 +25,7 @@ export default class BulkV2Results extends SfCommand<void> {
       summary: messages.getMessage('flags.type.summary'),
       description: messages.getMessage('flags.type.description'),
       required: false,
-      default: 'LF',
+      default: 'success',
     }),
     outputfile: Flags.string({
       char: 'f',

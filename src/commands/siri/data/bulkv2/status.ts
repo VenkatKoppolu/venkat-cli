@@ -27,10 +27,10 @@ export default class BulkV2Status extends SfCommand<BulkV2StatusResult> {
     }),
     type: Flags.string({
       char: 't',
-      summary: messages.getMessage('flags.type.summary'),
-      description: messages.getMessage('flags.type.description'),
+      summary: messages.getMessage('flags.statustype.summary'),
+      description: messages.getMessage('flags.statustype.description'),
       required: false,
-      default: 'LF',
+      default: 'STATUS',
     }),
   };
 
