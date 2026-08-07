@@ -284,11 +284,11 @@ Delete or hard delete records.
 sf siri data bulkv2 delete --sobjecttype Account --csvfile ids.csv --targetusername myorg@example.com
 
 # Hard delete
-sf siri data bulkv2 delete --sobjecttype Account --csvfile ids.csv --hardelete --targetusername myorg@example.com
+sf siri data bulkv2 delete --sobjecttype Account --csvfile ids.csv --hard --targetusername myorg@example.com
 ```
 
 **Additional Option:**
-- `-h, --hardelete` - (Optional) Hard delete instead of soft delete
+- `-x, --hard` - (Optional) Hard delete instead of soft delete
 
 ### `sf siri data bulkv2 query`
 
@@ -332,7 +332,7 @@ sf siri data bulkv2 results \
 
 **Options:**
 - `-i, --jobid=<string>` - (Required) Job ID
-- `-t, --type=<string>` - (Required) Result type (success, failed, unprocessed)
+- `-t, --type=<string>` - (Required) Result type (success, failed, unprocessed,QUERY_RESULT,QUERY_STATUS)
 - `-o, --outputfile=<string>` - (Required) Output file path
 
 ## For More Help

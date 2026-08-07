@@ -1,5 +1,7 @@
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as util from 'node:util';
+import * as readline from 'node:readline';
 import path, { resolve as pathResolve } from 'node:path';
 import { Connection, Logger, Messages, SfError } from '@salesforce/core';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
@@ -8,6 +10,12 @@ import { Common } from './common.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('siri', 'siri.data.bulkv2');
+
+// Max size (MB) of a single CSV chunk uploaded to the Bulk API 2.0 ingest endpoint.
+// Kept under the 150 MB API limit while minimizing the number of jobs a large
+// input CSV is split into. Splitting only kicks in above this size.
+const MAX_CHUNK_MB = 100;
+const MAX_CHUNK_BYTES = MAX_CHUNK_MB * 1024 * 1024;
 
 const logger = (await Logger.child('Org')).getRawLogger();
 
@@ -30,6 +38,8 @@ enum ENDPOINT {
 export class BulkV2 {
   private conn: Connection;
   private query: boolean = false;
+  // Temp chunk files created by checkFileSizeAndAct; removed by cleanupTempFiles.
+  private tempFiles: string[] = [];
 
   public constructor(conn: Connection) {
     this.conn = conn;
@@ -80,35 +90,89 @@ export class BulkV2 {
     return JSON.stringify(requestBody);
   }
 
-  public checkFileSizeAndAct(filename: string): string[] {
-    const files: string[] = [];
-    const size = this.getFilesizeInMegaBytes(filename);
-    if (size < 20) {
-      files.push(filename);
-      return files;
+  /**
+   * Return the list of CSV files to ingest.
+   *
+   * Files under MAX_CHUNK_MB are used as-is. Larger files are split into chunks,
+   * each under MAX_CHUNK_MB, so no single Bulk API upload exceeds the 150 MB limit.
+   *
+   * The input is read line-by-line via a stream and never held in memory whole;
+   * at most one chunk (~MAX_CHUNK_MB) is buffered at a time. The original header
+   * row is preserved on every chunk. Chunks are written to unique paths in the OS
+   * temp directory and tracked for later removal via {@link cleanupTempFiles}.
+   */
+  public async checkFileSizeAndAct(filename: string): Promise<string[]> {
+    const absPath = pathResolve(process.cwd(), filename);
+    if (this.getFilesizeInMegaBytes(absPath) < MAX_CHUNK_MB) {
+      return [filename];
     }
 
-    const numberOfTempFiles = Math.ceil(size / 20);
-    const linesArray = fs
-      .readFileSync(pathResolve(process.cwd(), filename), { encoding: 'utf8' })
-      .toString()
-      .split('\n');
-    const numberOfLinesInSingleFile = Math.ceil(linesArray.length / numberOfTempFiles);
+    const rl = readline.createInterface({
+      input: fs.createReadStream(absPath, { encoding: 'utf8' }),
+      crlfDelay: Infinity,
+    });
 
-    const result: string[][] = linesArray.reduce((resultArray: string[][], item: string, index: number) => {
-      const chunkIndex = Math.floor(index / numberOfLinesInSingleFile);
+    let header: string | undefined;
+    let chunkLines: string[] = [];
+    let chunkBytes = 0;
+    let chunkIndex = 0;
 
-      const chunk = resultArray[chunkIndex] ? [...resultArray[chunkIndex], item] : [item];
-      return Object.assign([], resultArray, { [chunkIndex]: chunk });
-    }, []);
+    const flushChunk = async (): Promise<void> => {
+      if (chunkLines.length === 0) return;
+      const tempPath = path.join(os.tmpdir(), `bulkv2-split-${process.pid}-${Date.now()}-${chunkIndex}.csv`);
+      chunkIndex++;
+      this.tempFiles.push(tempPath);
+      await fs.promises.writeFile(tempPath, `${header ?? ''}\n${chunkLines.join('\n')}\n`, { encoding: 'utf8' });
+      chunkLines = [];
+      chunkBytes = 0;
+    };
 
-    for (let i = 0; i < result.length; i++) {
-      const tempFilename = `temp${i}.csv`;
-      files.push(tempFilename);
-      fs.writeFileSync(tempFilename, (i === 0 ? '' : '"Id"\n') + result[i].join('\n'), { encoding: 'utf8' });
+    try {
+      for await (const line of rl) {
+        // First line is the header — captured once and re-emitted on every chunk.
+        if (header === undefined) {
+          header = line;
+          continue;
+        }
+        // Skip blank lines (e.g. a trailing newline) so chunks contain only records.
+        if (line.trim() === '') continue;
+
+        chunkLines.push(line);
+        chunkBytes += Buffer.byteLength(line, 'utf8') + 1; // +1 for the newline
+
+        if (chunkBytes >= MAX_CHUNK_BYTES) {
+          // eslint-disable-next-line no-await-in-loop
+          await flushChunk();
+        }
+      }
+      await flushChunk();
+    } catch (err) {
+      // Remove any partial chunks so a failed split leaves nothing behind.
+      this.cleanupTempFiles();
+      throw new SfError(
+        `Failed to split CSV file: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        'FileSplitError'
+      );
+    } finally {
+      rl.close();
     }
 
-    return files;
+    return [...this.tempFiles];
+  }
+
+  /**
+   * Remove all temp chunk files created by {@link checkFileSizeAndAct}.
+   * Best-effort: individual removal failures are ignored. Safe to call more than once.
+   */
+  public cleanupTempFiles(): void {
+    for (const file of this.tempFiles) {
+      try {
+        fs.rmSync(file, { force: true });
+      } catch {
+        // Best-effort cleanup — ignore removal errors.
+      }
+    }
+    this.tempFiles = [];
   }
 
   public async operate(input: BulkV2Input): Promise<JobInfo> {
@@ -247,8 +311,14 @@ export class BulkV2 {
     if (file === undefined) {
       throw new SfError('No file available', 'NoFileError');
     }
-    const data: string = fs.readFileSync(path.resolve(Common.cwd, file), { encoding: 'utf8' }).toString();
+    const filePath = path.resolve(Common.cwd, file);
+    // Stream the CSV rather than buffering it, so upload memory stays flat
+    // regardless of chunk size. Salesforce's ingest endpoint requires an
+    // explicit Content-Length, so set it from the file size upfront.
+    const { size } = fs.statSync(filePath);
+    const data = fs.createReadStream(filePath);
     const config: AxiosRequestConfig = this.generateConfig('text/csv');
+    config.headers = { ...config.headers, 'Content-Length': String(size) };
     const endpoint: string = this.generateEndpoint('UPLOAD', job.id);
     const response: AxiosResponse = await axios.put(endpoint, data, config);
     const updatedJob: JobInfo = { ...job };
