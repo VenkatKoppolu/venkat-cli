@@ -27,11 +27,15 @@ export type JobInfo = {
   errorMessage?: string;
 };
 
+// Valid Bulk API 2.0 operations. Ingest jobs use insert/update/upsert/delete/hardDelete;
+// query jobs use query. Keeping this a union lets the compiler reject typos like 'hard'.
+export type BulkOperation = 'insert' | 'update' | 'upsert' | 'delete' | 'hardDelete' | 'query';
+
 export type BulkV2Input = {
   sobjecttype: string;
   externalid?: string;
   csvfile?: string;
-  operation: string;
+  operation: BulkOperation;
   lineending?: string;
   delimiter?: string;
   query?: string;
