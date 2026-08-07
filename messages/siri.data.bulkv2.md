@@ -118,7 +118,7 @@ Remove records at scale using the Salesforce Bulk API v2 with support for soft d
 # delete.examples
 
 sf siri data bulkv2 delete -s Account -f /csv/file/path/csvfile.csv
-sf siri data bulkv2 delete -s Account --hardelete -f /csv/file/path/csvfile.csv
+sf siri data bulkv2 delete -s Account --hard -f /csv/file/path/csvfile.csv
 
 # flags.targetorg.summary
 
@@ -183,15 +183,15 @@ CRLF—carriage return character followed by a linefeed character
 (required) the column name of the external ID
 
 
-# flags.hardelete.summary
+# flags.hard.summary
 
 (optional) if specified then the deleted records aren't stored in the Recycle Bin.
- permission "Bulk API Hard Delete" should be set for the user to perform hardDelete.
+ permission "Bulk API Hard Delete" should be set for the user to perform hard.
 
-# flags.hardelete.description
+# flags.hard.description
 
 (optional) if specified then the deleted records aren't stored in the Recycle Bin.
- permission "Bulk API Hard Delete" should be set for the user to perform hardDelete.
+ permission "Bulk API Hard Delete" should be set for the user to perform hard.
 
 
 # flags.query.summary

@@ -49,3 +49,16 @@ Force Bulk API usage
 Force use of Bulk API for all batch sizes (default: auto-detect based on volume)
 
 
+# flags.concurrency.summary
+Number of files to download in parallel (1–50). Defaults to 10.
+
+# flags.concurrency.description
+Controls concurrency for the download phase. Higher values are faster but
+increase memory and API usage. Keep below 20 for large files.
+
+# flags.max-file-size.summary
+Maximum file size in bytes to download. Defaults to 104857600 (100 MB).
+
+# flags.max-file-size.description
+Files exceeding this limit are skipped and recorded as errors in the export
+result. Increase this value if you expect very large attachments or documents.

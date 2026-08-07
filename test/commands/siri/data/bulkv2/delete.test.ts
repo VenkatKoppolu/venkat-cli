@@ -56,33 +56,22 @@ describe('siri:data:bulkv2:delete', () => {
     sinon.stub(cmd.spinner, 'stop');
     sinon.stub(cmd, 'log');
 
-    const result = await (cmd as any).run([
-      '--sobjecttype',
-      'Account',
-      '--csvfile',
-      'delete.csv',
-    ]);
+    const result = await (cmd as any).run(['--sobjecttype', 'Account', '--csvfile', 'delete.csv']);
 
     expect(Array.isArray(result)).to.be.true;
     expect(result[0].operation).to.equal('delete');
   });
 
-  it('should use hardDelete operation when hardelete flag is set', async () => {
+  it('should use hard operation when hard flag is set', async () => {
     const cmd = new BulkV2Delete([]);
     sinon.stub(cmd.spinner, 'start');
     sinon.stub(cmd.spinner, 'stop');
     sinon.stub(cmd, 'log');
 
-    await (cmd as any).run([
-      '--sobjecttype',
-      'Account',
-      '--csvfile',
-      'delete.csv',
-      '--hardelete',
-    ]);
+    await (cmd as any).run(['--sobjecttype', 'Account', '--csvfile', 'delete.csv', '--hard']);
 
     const callArgs = bulkV2OperateStub.getCall(0).args[0];
-    expect(callArgs.operation).to.equal('hardDelete');
+    expect(callArgs.operation).to.equal('hard');
   });
 
   it('should use delete operation by default', async () => {
@@ -91,12 +80,7 @@ describe('siri:data:bulkv2:delete', () => {
     sinon.stub(cmd.spinner, 'stop');
     sinon.stub(cmd, 'log');
 
-    await (cmd as any).run([
-      '--sobjecttype',
-      'Account',
-      '--csvfile',
-      'delete.csv',
-    ]);
+    await (cmd as any).run(['--sobjecttype', 'Account', '--csvfile', 'delete.csv']);
 
     const callArgs = bulkV2OperateStub.getCall(0).args[0];
     expect(callArgs.operation).to.equal('delete');
@@ -108,12 +92,7 @@ describe('siri:data:bulkv2:delete', () => {
     sinon.stub(cmd.spinner, 'stop');
     sinon.stub(cmd, 'log');
 
-    await (cmd as any).run([
-      '--sobjecttype',
-      'Account',
-      '--csvfile',
-      'delete.csv',
-    ]);
+    await (cmd as any).run(['--sobjecttype', 'Account', '--csvfile', 'delete.csv']);
 
     expect(checkFileSizeStub.calledOnce).to.be.true;
   });
@@ -125,12 +104,7 @@ describe('siri:data:bulkv2:delete', () => {
     sinon.stub(cmd.spinner, 'stop');
     sinon.stub(cmd, 'log');
 
-    const result = await (cmd as any).run([
-      '--sobjecttype',
-      'Account',
-      '--csvfile',
-      'delete.csv',
-    ]);
+    const result = await (cmd as any).run(['--sobjecttype', 'Account', '--csvfile', 'delete.csv']);
 
     expect(Array.isArray(result)).to.be.true;
     expect(result.length).to.be.greaterThan(0);
@@ -143,12 +117,7 @@ describe('siri:data:bulkv2:delete', () => {
     const stopStub = sinon.stub(cmd.spinner, 'stop');
 
     try {
-      await (cmd as any).run([
-        '--sobjecttype',
-        'Account',
-        '--csvfile',
-        'delete.csv',
-      ]);
+      await (cmd as any).run(['--sobjecttype', 'Account', '--csvfile', 'delete.csv']);
       expect.fail('Should have thrown error');
     } catch (err) {
       expect(stopStub.called).to.be.true;

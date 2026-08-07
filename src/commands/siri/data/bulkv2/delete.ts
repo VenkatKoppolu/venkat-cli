@@ -50,10 +50,10 @@ export default class BulkV2Delete extends SfCommand<BulkV2DeleteResult[]> {
       required: false,
       default: 'COMMA',
     }),
-    hardelete: Flags.boolean({
+    hard: Flags.boolean({
       char: 'x',
-      summary: messages.getMessage('flags.hardelete.summary'),
-      description: messages.getMessage('flags.hardelete.description'),
+      summary: messages.getMessage('flags.hard.summary'),
+      description: messages.getMessage('flags.hard.description'),
       required: false,
       default: false,
     }),
@@ -65,6 +65,7 @@ export default class BulkV2Delete extends SfCommand<BulkV2DeleteResult[]> {
     // Start the spinner
     this.spinner.start('BulkV2 Delete');
     const responses: JobInfo[] = [];
+    let bulkv2: BulkV2 | undefined;
     try {
       // Get the Salesforce org and Connection
       const org = flags['target-org'];
@@ -75,14 +76,14 @@ export default class BulkV2Delete extends SfCommand<BulkV2DeleteResult[]> {
       if (apiVersion) {
         conn.setApiVersion(apiVersion);
       }
-      const bulkv2 = new BulkV2(conn);
-      const files: string[] = bulkv2.checkFileSizeAndAct(flags.csvfile);
+      bulkv2 = new BulkV2(conn);
+      const files: string[] = await bulkv2.checkFileSizeAndAct(flags.csvfile);
 
       // eslint-disable-next-line no-await-in-loop
       for (const file of files) {
         const input: BulkV2Input = {
           sobjecttype: flags.sobjecttype,
-          operation: flags.hardelete ? 'hardDelete' : 'delete',
+          operation: flags.hard ? 'hard' : 'delete',
           csvfile: file,
           lineending: flags.lineending,
           delimiter: flags.columndelimiter,
@@ -97,6 +98,8 @@ export default class BulkV2Delete extends SfCommand<BulkV2DeleteResult[]> {
     } catch (err) {
       throw SfError.wrap(err);
     } finally {
+      // Remove any temp chunk files created when splitting a large CSV.
+      bulkv2?.cleanupTempFiles();
       this.spinner.stop();
     }
   }

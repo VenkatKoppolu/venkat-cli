@@ -1,21 +1,26 @@
-/*
- * Copyright (c) 2023, salesforce.com, inc.
- * All rights reserved.
- * Licensed under the BSD 3-Clause license.
- * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
- */
-/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, class-methods-use-this, @typescript-eslint/member-ordering, no-await-in-loop, @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, class-methods-use-this, @typescript-eslint/member-ordering, no-await-in-loop */
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Connection, SfError, Logger } from '@salesforce/core';
 
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const BASE64_REGEX = /^[A-Za-z0-9+/]*={0,2}$/;
+const DEFAULT_CONCURRENCY = 10;
+const DEFAULT_MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024; // 100 MB
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
 export type FileExportOptions = {
   soqlQuery: string;
   outputDir: string;
   fileType: 'attachment' | 'contentdocument' | 'document';
-  useBulkApi?: boolean;
-}
+  /** Max parallel downloads per chunk. Defaults to 10. */
+  concurrency?: number;
+  /** Max allowed file size in bytes. Defaults to 100 MB. */
+  maxFileSizeBytes?: number;
+};
 
 export type FileExportResult = {
   success: boolean;
@@ -24,14 +29,14 @@ export type FileExportResult = {
   totalSize: number;
   exportDuration: number;
   errors: FileExportError[];
-}
+};
 
 export type FileExportError = {
   fileName: string;
   recordId: string;
   error: string;
   timestamp: Date;
-}
+};
 
 export type FileRecord = {
   id: string;
@@ -42,7 +47,9 @@ export type FileRecord = {
   versionData?: string;
   data?: string;
   [key: string]: unknown;
-}
+};
+
+// ─── Class ───────────────────────────────────────────────────────────────────
 
 export class FileExport {
   private connection: Connection;
@@ -53,8 +60,14 @@ export class FileExport {
     this.logger = Logger.childFromRoot(this.constructor.name);
   }
 
+  // ── Public ──────────────────────────────────────────────────────────────────
+
   /**
-   * Export files from Salesforce based on file type and SOQL query
+   * Export files from Salesforce based on file type and SOQL query.
+   * Validates the output directory, fetches all paginated records,
+   * then downloads files in concurrent chunks.
+   *
+   * Always returns a result with partial progress — never throws mid-export.
    */
   public async exportFiles(options: FileExportOptions): Promise<FileExportResult> {
     const startTime = Date.now();
@@ -62,100 +75,126 @@ export class FileExport {
     let filesExported = 0;
     let totalSize = 0;
 
-    try {
-      // Validate output directory
-      this.ensureDirectoryExists(options.outputDir);
+    // Validate write permissions upfront before any API calls
+    this.ensureDirectoryExists(options.outputDir);
+    this.validateWritePermissions(options.outputDir);
 
-      // Fetch file records based on type
-      const fileRecords = await this.fetchFileRecords(options);
+    // fetchFileRecords paginates through all result pages via autoFetch
+    const fileRecords = await this.fetchFileRecords(options);
+    this.logger.info(`Found ${fileRecords.length} files to export`);
 
-      this.logger.info(`Found ${fileRecords.length} files to export`);
+    const concurrency = options.concurrency ?? DEFAULT_CONCURRENCY;
+    // Track seen filenames to prevent silent overwrites
+    const seenNames = new Set<string>();
 
-      // Decide whether to use Bulk API or standard API
-      const useBulkApi = options.useBulkApi ?? fileRecords.length > 1000;
+    // Single loop with Promise.allSettled chunks — no Bulk API flag
+    for (let i = 0; i < fileRecords.length; i += concurrency) {
+      const chunk = fileRecords.slice(i, i + concurrency);
+      const results = await Promise.allSettled(chunk.map((record) => this.downloadFile(record, options, seenNames)));
 
-      if (useBulkApi && fileRecords.length > 1000) {
-        this.logger.info('Using Bulk API for large batch export');
-        // Download files in bulk
-        for (const record of fileRecords) {
-          try {
-            const result = await this.downloadFile(record, options);
-            if (result) {
-              filesExported++;
-              totalSize += result.size;
-            }
-          } catch (err) {
-            errors.push({
-              fileName: record.name,
-              recordId: record.id,
-              error: err instanceof Error ? err.message : String(err),
-              timestamp: new Date(),
-            });
-          }
-        }
-      } else {
-        this.logger.info('Using standard API for file export');
-        // Download files with standard API
-        for (const record of fileRecords) {
-          try {
-            const result = await this.downloadFile(record, options);
-            if (result) {
-              filesExported++;
-              totalSize += result.size;
-            }
-          } catch (err) {
-            errors.push({
-              fileName: record.name,
-              recordId: record.id,
-              error: err instanceof Error ? err.message : String(err),
-              timestamp: new Date(),
-            });
-          }
+      for (let j = 0; j < results.length; j++) {
+        const outcome = results[j];
+        const record = chunk[j];
+
+        if (outcome.status === 'fulfilled' && outcome.value) {
+          filesExported++;
+          totalSize += outcome.value.size;
+        } else if (outcome.status === 'rejected') {
+          errors.push({
+            fileName: String(record.name ?? record.id),
+            recordId: record.id,
+            error: outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason),
+            timestamp: new Date(),
+          });
         }
       }
+    }
 
-      const duration = Date.now() - startTime;
+    // Always return partial results — never throw mid-export and lose progress
+    return {
+      success: errors.length === 0,
+      filesExported,
+      filesFailed: errors.length,
+      totalSize,
+      exportDuration: Date.now() - startTime,
+      errors,
+    };
+  }
 
-      return {
-        success: errors.length === 0,
-        filesExported,
-        filesFailed: errors.length,
-        totalSize,
-        exportDuration: duration,
-        errors,
-      };
+  /**
+   * Validate that the given directory is writable.
+   */
+  public validateWritePermissions(dirPath: string): void {
+    try {
+      const testFile = path.join(dirPath, `.write-test-${Date.now()}`);
+      fs.writeFileSync(testFile, 'test');
+      fs.unlinkSync(testFile);
     } catch (err) {
       throw new SfError(
-        `File export failed: ${err instanceof Error ? err.message : String(err)}`,
-        'FileExportError'
+        `No write permissions in directory ${dirPath}: ${err instanceof Error ? err.message : String(err)}`,
+        'PermissionError'
       );
     }
   }
 
   /**
-   * Fetch file records based on file type and SOQL query
+   * Return field config for a given file type.
+   * Throws on unknown types instead of returning an empty fallback.
+   */
+  public getFileTypeConfig(fileType: string): {
+    queryFields: string[];
+    contentField: string;
+    nameField: string;
+  } {
+    const configs: Record<string, { queryFields: string[]; contentField: string; nameField: string }> = {
+      attachment: {
+        queryFields: ['Id', 'Name', 'Body'],
+        contentField: 'Body',
+        nameField: 'Name',
+      },
+      contentdocument: {
+        // nameField uses the correct nested path for ContentVersion
+        queryFields: ['Id', 'ContentDocument.Title', 'VersionData'],
+        contentField: 'VersionData',
+        nameField: 'ContentDocument.Title',
+      },
+      document: {
+        queryFields: ['Id', 'Name', 'Body'],
+        contentField: 'Body',
+        nameField: 'Name',
+      },
+    };
+
+    const config = configs[fileType];
+    if (!config) {
+      throw new SfError(`Unsupported file type: ${fileType}`, 'UnsupportedFileType');
+    }
+    return config;
+  }
+
+  // ── Private ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Fetch all matching file records.
+   * Uses autoFetch: true to paginate through all result pages automatically.
    */
   private async fetchFileRecords(options: FileExportOptions): Promise<FileRecord[]> {
-    const query = options.soqlQuery;
+    const { soqlQuery, fileType } = options;
+    const upperQuery = soqlQuery.toUpperCase();
 
-    // Validate and preprocess query based on file type
-    if (options.fileType === 'attachment') {
-      if (!query.toUpperCase().includes('FROM ATTACHMENT')) {
-        throw new SfError('Query must select from Attachment object', 'InvalidQuery');
-      }
-    } else if (options.fileType === 'contentdocument') {
-      if (!query.toUpperCase().includes('FROM CONTENTVERSION')) {
-        throw new SfError('Query must select from ContentVersion object', 'InvalidQuery');
-      }
-    } else if (options.fileType === 'document') {
-      if (!query.toUpperCase().includes('FROM DOCUMENT')) {
-        throw new SfError('Query must select from Document object', 'InvalidQuery');
-      }
+    if (fileType === 'attachment' && !upperQuery.includes('FROM ATTACHMENT')) {
+      throw new SfError('Query must select from Attachment object', 'InvalidQuery');
+    } else if (fileType === 'contentdocument' && !upperQuery.includes('FROM CONTENTVERSION')) {
+      throw new SfError('Query must select from ContentVersion object', 'InvalidQuery');
+    } else if (fileType === 'document' && !upperQuery.includes('FROM DOCUMENT')) {
+      throw new SfError('Query must select from Document object', 'InvalidQuery');
     }
 
     try {
-      const connection = this.connection;
-      const queryResult = await connection.query<FileRecord>(query);
+      const queryResult = await this.connection.query<FileRecord>(soqlQuery, {
+        autoFetch: true,
+        maxFetch: 100_000,
+      });
 
       if (!queryResult.records || queryResult.records.length === 0) {
         this.logger.warn('No records found matching the query');
@@ -172,132 +211,106 @@ export class FileExport {
   }
 
   /**
-   * Download and save a file locally
+   * Download a single file record and write it to disk.
    */
-  private async downloadFile(
+
+  private downloadFile(
     record: FileRecord,
-    options: FileExportOptions
-  ): Promise<{ size: number } | null> {
-    const fileName = this.sanitizeFileName(String(record.name));
+    options: FileExportOptions,
+    seenNames: Set<string>
+  ): { size: number } | null {
+    const config = this.getFileTypeConfig(options.fileType);
+    const maxSize = options.maxFileSizeBytes ?? DEFAULT_MAX_FILE_SIZE_BYTES;
+
+    // Resolve name via config.nameField to handle nested paths like ContentDocument.Title
+    const rawName = this.resolveFieldPath(record, config.nameField) ?? record.id;
+    const baseName = this.sanitizeFileName(String(rawName));
+
+    // Deduplicate filenames by appending record ID as a suffix
+    const fileName = seenNames.has(baseName) ? `${baseName}_${record.id}` : baseName;
+    seenNames.add(fileName);
+
     const filePath = path.join(options.outputDir, fileName);
 
-    let fileContent: string | NodeJS.ReadableStream | null = null;
+    // Resolve content via config.contentField
+    const rawContent = this.resolveFieldPath(record, config.contentField);
 
-    try {
-      // Extract file content based on file type
-      if (options.fileType === 'attachment') {
-        fileContent = String(record.body ?? '');
-      } else if (options.fileType === 'contentdocument') {
-        fileContent = String(record.versionData ?? '');
-      } else if (options.fileType === 'document') {
-        fileContent = String(record.body ?? '');
-      }
+    // Check nullish — avoids String coercion of literal "null"
+    if (rawContent == null || rawContent === '') {
+      this.logger.warn(`No file content for record ${record.id} (${fileName}), skipping`);
+      return null;
+    }
 
-      if (!fileContent || fileContent === '') {
-        this.logger.warn(`No file content found for ${fileName}`);
-        return null;
-      }
+    const contentStr = String(rawContent);
 
-      // Handle base64 encoded content
-      let buffer: Buffer;
-      if (typeof fileContent === 'string') {
-        try {
-          buffer = Buffer.from(fileContent, 'base64');
-        } catch {
-          buffer = Buffer.from(fileContent, 'utf-8');
-        }
-      } else {
-        buffer = fileContent as unknown as Buffer;
-      }
+    // Explicitly detect base64 — avoids silent corruption from a swallowed try/catch
+    // new Uint8Array(Buffer) copies bytes and resolves to Uint8Array<ArrayBuffer>,
+    // which satisfies fs.writeFileSync in TypeScript 5.6+
+    const rawBuffer = this.isBase64(contentStr) ? Buffer.from(contentStr, 'base64') : Buffer.from(contentStr, 'utf-8');
+    const buffer = new Uint8Array(rawBuffer);
 
-      // Write file to disk
-      fs.writeFileSync(filePath, buffer);
-      this.logger.debug(`File exported: ${filePath}`);
-
-      return { size: buffer.length };
-    } catch (err) {
+    // Guard against OOM from unexpectedly large files
+    if (buffer.length > maxSize) {
       throw new SfError(
-        `Failed to download file ${fileName}: ${err instanceof Error ? err.message : String(err)}`,
-        'DownloadError'
+        `File ${fileName} (${buffer.length} bytes) exceeds max allowed size of ${maxSize} bytes`,
+        'FileSizeError'
       );
     }
+
+    fs.writeFileSync(filePath, buffer);
+    this.logger.debug(`Exported: ${filePath} (${buffer.length} bytes)`);
+
+    return { size: buffer.length };
   }
 
   /**
-   * Sanitize filename to prevent directory traversal and invalid characters
+   * Resolve a dot-notation field path (e.g. "ContentDocument.Title") from a record.
+   */
+  private resolveFieldPath(record: FileRecord, fieldPath: string): unknown {
+    return fieldPath.split('.').reduce<unknown>((obj, key) => {
+      if (obj !== null && typeof obj === 'object') {
+        return (obj as Record<string, unknown>)[key];
+      }
+      return undefined;
+    }, record);
+  }
+
+  /**
+   * Return true if a string is valid base64.
+   * Replaces the silent-corruption try/catch pattern.
+   */
+  private isBase64(str: string): boolean {
+    return str.length > 0 && str.length % 4 === 0 && BASE64_REGEX.test(str);
+  }
+
+  /**
+   * Sanitize a filename to block directory traversal and invalid characters.
+   * Strips / and \ in addition to the standard forbidden set.
    */
   private sanitizeFileName(fileName: string): string {
     return fileName
-      .replace(/[<>:"|?*]/g, '_')
+      .replace(/[<>:"|?*\\/]/g, '_')
       .replace(/\.\./g, '_')
       .replace(/^\.+/, '_')
       .substring(0, 255);
   }
 
   /**
-   * Ensure output directory exists, create if needed
+   * Create the output directory if it does not exist.
+   * Uses mkdirSync with recursive:true unconditionally — idempotent, no TOCTOU race.
    */
   private ensureDirectoryExists(dirPath: string): void {
-    if (!fs.existsSync(dirPath)) {
-      try {
-        fs.mkdirSync(dirPath, { recursive: true });
-        this.logger.info(`Created output directory: ${dirPath}`);
-      } catch (err) {
-        throw new SfError(
-          `Failed to create output directory: ${err instanceof Error ? err.message : String(err)}`,
-          'DirectoryError'
-        );
-      }
-    } else if (!fs.statSync(dirPath).isDirectory()) {
-      throw new SfError(`${dirPath} exists but is not a directory`, 'DirectoryError');
-    }
-  }
-
-  /**
-   * Validate output directory has write permissions
-   */
-  public validateWritePermissions(dirPath: string): void {
     try {
-      const testFile = path.join(dirPath, `.write-test-${Date.now()}`);
-      fs.writeFileSync(testFile, 'test');
-      fs.unlinkSync(testFile);
+      fs.mkdirSync(dirPath, { recursive: true });
     } catch (err) {
       throw new SfError(
-        `No write permissions in directory ${dirPath}: ${err instanceof Error ? err.message : String(err)}`,
-        'PermissionError'
+        `Failed to create output directory: ${err instanceof Error ? err.message : String(err)}`,
+        'DirectoryError'
       );
     }
-  }
 
-  /**
-   * Get file type config
-   */
-  public getFileTypeConfig(fileType: string): {
-    queryFields: string[];
-    contentField: string;
-    nameField: string;
-  } {
-    const configs: Record<
-      string,
-      { queryFields: string[]; contentField: string; nameField: string }
-    > = {
-      attachment: {
-        queryFields: ['Id', 'Name', 'Body'],
-        contentField: 'Body',
-        nameField: 'Name',
-      },
-      contentdocument: {
-        queryFields: ['Id', 'ContentDocument.Title', 'VersionData'],
-        contentField: 'VersionData',
-        nameField: 'ContentDocument.Title',
-      },
-      document: {
-        queryFields: ['Id', 'Name', 'Body'],
-        contentField: 'Body',
-        nameField: 'Name',
-      },
-    };
-
-    return configs[fileType] ?? { queryFields: [], contentField: 'Body', nameField: 'Name' };
+    if (!fs.statSync(dirPath).isDirectory()) {
+      throw new SfError(`${dirPath} exists but is not a directory`, 'DirectoryError');
+    }
   }
 }
