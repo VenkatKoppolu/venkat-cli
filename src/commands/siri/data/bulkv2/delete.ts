@@ -83,7 +83,7 @@ export default class BulkV2Delete extends SfCommand<BulkV2DeleteResult[]> {
       for (const file of files) {
         const input: BulkV2Input = {
           sobjecttype: flags.sobjecttype,
-          operation: flags.hard ? 'hard' : 'delete',
+          operation: flags.hard ? 'hardDelete' : 'delete',
           csvfile: file,
           lineending: flags.lineending,
           delimiter: flags.columndelimiter,
@@ -96,7 +96,14 @@ export default class BulkV2Delete extends SfCommand<BulkV2DeleteResult[]> {
       }
       return responses;
     } catch (err) {
-      throw SfError.wrap(err);
+      const sfErr = SfError.wrap(err instanceof Error ? err : new Error(String(err)));
+      // Print the underlying error and full stack trace, not just the summary line.
+      const causeStack = sfErr.cause instanceof Error ? sfErr.cause.stack : undefined;
+      const stack = causeStack ?? sfErr.stack;
+      if (stack) {
+        this.logToStderr(stack);
+      }
+      throw sfErr;
     } finally {
       // Remove any temp chunk files created when splitting a large CSV.
       bulkv2?.cleanupTempFiles();

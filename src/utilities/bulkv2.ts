@@ -40,6 +40,8 @@ export class BulkV2 {
   private query: boolean = false;
   // Temp chunk files created by checkFileSizeAndAct; removed by cleanupTempFiles.
   private tempFiles: string[] = [];
+  // Max bytes per split chunk. Defaults to the API-safe cap; overridable for tests.
+  private maxChunkBytes: number = MAX_CHUNK_BYTES;
 
   public constructor(conn: Connection) {
     this.conn = conn;
@@ -88,6 +90,35 @@ export class BulkV2 {
     }
 
     return JSON.stringify(requestBody);
+  }
+
+  /**
+   * Convert an error from an axios call into an SfError that includes the
+   * Salesforce response body (e.g. [{ errorCode, message }]) instead of the
+   * opaque "Request failed with status code 4xx" message.
+   */
+  private static toSfError(err: unknown, context: string): SfError {
+    if (axios.isAxiosError(err)) {
+      const status = err.response?.status;
+      const body: unknown = err.response?.data;
+      const detail =
+        body === undefined || body === null || body === ''
+          ? err.message
+          : typeof body === 'string'
+          ? body
+          : JSON.stringify(body);
+      const sfErr = new SfError(
+        `${context} failed${status !== undefined ? ` (HTTP ${status})` : ''}: ${detail}`,
+        'BulkApiError'
+      );
+      // Preserve the original error so its stack is available (shown with --dev-debug).
+      sfErr.cause = err;
+      return sfErr;
+    }
+    const base = err instanceof Error ? err : new Error(String(err));
+    const sfErr = new SfError(`${context} failed: ${base.message}`, 'BulkApiError');
+    sfErr.cause = base;
+    return sfErr;
   }
 
   /**
@@ -140,7 +171,7 @@ export class BulkV2 {
         chunkLines.push(line);
         chunkBytes += Buffer.byteLength(line, 'utf8') + 1; // +1 for the newline
 
-        if (chunkBytes >= MAX_CHUNK_BYTES) {
+        if (chunkBytes >= this.maxChunkBytes) {
           // eslint-disable-next-line no-await-in-loop
           await flushChunk();
         }
@@ -291,20 +322,28 @@ export class BulkV2 {
     const data: string = JSON.stringify({ state: 'UploadComplete' });
     const config: AxiosRequestConfig = this.generateConfig('application/json');
     const endpoint: string = this.generateEndpoint('STATUS', job.id);
-    const response: AxiosResponse<JobInfo> = await axios.patch<JobInfo>(endpoint, data, config);
-    const updatedJob: JobInfo = response.data;
-    if (response.status !== 200) {
-      updatedJob.errorMessage = response.statusText;
+    try {
+      const response: AxiosResponse<JobInfo> = await axios.patch<JobInfo>(endpoint, data, config);
+      const updatedJob: JobInfo = response.data;
+      if (response.status !== 200) {
+        updatedJob.errorMessage = response.statusText;
+      }
+      return updatedJob;
+    } catch (err) {
+      throw BulkV2.toSfError(err, 'Marking job UploadComplete');
     }
-    return updatedJob;
   }
 
   private async createJob(input: BulkV2Input): Promise<JobInfo> {
     const data: string = BulkV2.generateRequestBody(input);
     const config: AxiosRequestConfig = this.generateConfig('application/json');
     const endpoint: string = this.generateEndpoint(this.query ? 'QUERY' : 'CREATE');
-    const response: AxiosResponse<JobInfo> = await axios.post(endpoint, data, config);
-    return response.data;
+    try {
+      const response: AxiosResponse<JobInfo> = await axios.post(endpoint, data, config);
+      return response.data;
+    } catch (err) {
+      throw BulkV2.toSfError(err, 'Creating bulk job');
+    }
   }
 
   private async uploadJob(job: JobInfo, file: string | undefined): Promise<JobInfo> {
@@ -320,13 +359,16 @@ export class BulkV2 {
     const config: AxiosRequestConfig = this.generateConfig('text/csv');
     config.headers = { ...config.headers, 'Content-Length': String(size) };
     const endpoint: string = this.generateEndpoint('UPLOAD', job.id);
-    const response: AxiosResponse = await axios.put(endpoint, data, config);
-    const updatedJob: JobInfo = { ...job };
-
-    if (response.status !== 201) {
-      updatedJob.errorMessage = response.statusText;
+    try {
+      const response: AxiosResponse = await axios.put(endpoint, data, config);
+      const updatedJob: JobInfo = { ...job };
+      if (response.status !== 201) {
+        updatedJob.errorMessage = response.statusText;
+      }
+      return updatedJob;
+    } catch (err) {
+      throw BulkV2.toSfError(err, 'Uploading job data');
     }
-    return updatedJob;
   }
 
   private generateConfig(contentType: string): AxiosRequestConfig {
